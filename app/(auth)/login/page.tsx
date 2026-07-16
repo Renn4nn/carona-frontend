@@ -12,13 +12,13 @@ export default function LoginPage() {
       variant="login"
       badge="Entre na sua comunidade academica"
       title="Sua carona para a universidade, todos os dias."
-      description="Conecte sua rotina com estudantes da mesma regiao e organize viagens entre casa e campus com uma experiencia simples, segura e elegante. Atualização 14/07/2026"
+      description="Conecte sua rotina com estudantes da mesma regiao e organize viagens entre casa e campus com uma experiencia simples, segura e elegante. Atualização 16/07/2026"
     >
       <div className="bg-white p-0 sm:rounded-[2rem] sm:border sm:border-[#1d1c1b]/10 sm:p-8 sm:shadow-[0_24px_90px_rgba(29,28,27,0.12)]">
         <div className="mb-8">
           <p className="text-sm font-medium text-[#eec131]">Bem-vindo de volta</p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight text-[#1d1c1b]">
-            Fazer logina
+            Fazer login
           </h2>
           <p className="mt-3 text-sm leading-6 text-[#1d1c1b]/70">
             Acesse sua conta para encontrar ou oferecer uma carona.

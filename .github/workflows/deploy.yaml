@@ -59,7 +59,7 @@ jobs:
 
               set -euo pipefail
 
-              cd ~/CARONA/carona-frontend
+              cd /var/www/CARONA/carona-frontend
 
               git fetch origin main
               git reset --hard origin/main
