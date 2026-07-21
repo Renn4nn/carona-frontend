@@ -1,32 +1,50 @@
-name: Deploy Frontend
+name: CI & Deploy Frontend
 
 on:
   push:
     branches:
       - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: read
 
 concurrency:
-  group: deploy-frontend-production
+  group: frontend-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   quality:
+    name: Quality checks
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: ./.github/actions/setup
+      - name: Setup dependencies
+        uses: ./.github/actions/setup
 
-      - run: pnpm lint
+      - name: Lint
+        run: pnpm lint
 
-      - run: pnpm check-types
+      - name: Check types
+        run: pnpm check-types
 
-      - run: pnpm build
+      - name: Build
+        run: pnpm build
 
   deploy:
+    name: Deploy to VPS
     needs: quality
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment: production
 
     steps:
