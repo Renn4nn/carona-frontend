@@ -38,6 +38,8 @@ Stack já presente:
 - Tailwind CSS 4;
 - shadcn/ui com Base UI;
 - Zod;
+- React Hook Form;
+- Axios;
 - next-themes;
 - Lucide React;
 - class-variance-authority;
@@ -46,9 +48,6 @@ Stack já presente:
 
 Stack definida para as próximas features:
 
-- React Hook Form;
-- `@hookform/resolvers`;
-- Axios;
 - TanStack Query;
 - Zustand;
 - TanStack Table para Data Table.
@@ -577,6 +576,16 @@ Não duplicar o mesmo dado entre essas camadas.
 - não criar Route Handler apenas para fazer proxy de uma função que uma Server
   Action ou Server Component pode executar diretamente.
 
+### Requisições e Actions
+
+- toda requisição ao backend deve ser iniciada por uma Server Action;
+- todas as Server Actions devem ficar na pasta raiz `actions/`, separadas por
+  domínio;
+- componentes e páginas não devem importar a instância Axios diretamente;
+- helpers server-only podem ser usados pelas Actions, mas não substituem a
+  fronteira pública em `actions/`;
+- mocks não são requisições e devem permanecer centralizados em `mock/`.
+
 ## 18. Tratamento de loading, vazio e erro
 
 Toda tela de dados deve considerar:
@@ -617,6 +626,9 @@ Não usar apenas toast para erro de campo.
 
 ## 20. Responsividade e experiência
 
+- toda tela deve ser responsiva e utilizável em mobile, tablet, notebook e
+  desktop, sem quebra, sobreposição ou perda de ações;
+- validar no mínimo as larguras de 320, 390, 768, 1024 e 1440 pixels;
 - desenvolver mobile-first;
 - evitar larguras e alturas rígidas sem necessidade;
 - testar telas pequenas e grandes;
