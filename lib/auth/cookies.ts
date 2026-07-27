@@ -7,7 +7,7 @@ import type { AuthResult } from "@/lib/types/auth/auth"
 export const ACCESS_TOKEN_COOKIE = "caronaAccessToken"
 export const REFRESH_TOKEN_COOKIE = "refreshToken"
 
-const secure = process.env.NODE_ENV === "production"
+const secure = process.env.AUTH_COOKIE_SECURE !== "false"
 const refreshMaxAge = 20 * 24 * 60 * 60
 
 export async function setSessionCookies(
