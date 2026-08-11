@@ -8,6 +8,7 @@ import {
   REFRESH_TOKEN_COOKIE,
 } from "@/lib/auth/cookies"
 import { sessionTokenPayloadSchema } from "@/lib/schemas/auth.schema"
+import { safeNextPath } from "@/lib/navigation"
 
 export type Session = {
   userId: string
@@ -75,10 +76,10 @@ export async function hasRefreshSession() {
   return Boolean(cookieStore.get(REFRESH_TOKEN_COOKIE)?.value)
 }
 
-export async function redirectAuthenticatedUser() {
+export async function redirectAuthenticatedUser(next?: string) {
   const session = await getSession()
 
   if (session) {
-    redirect("/inicio")
+    redirect(safeNextPath(next))
   }
 }

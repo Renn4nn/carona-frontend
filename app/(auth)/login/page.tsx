@@ -6,8 +6,9 @@ import {
   redirectAuthenticatedUser,
 } from "@/lib/auth/session"
 
-export default async function LoginPage() {
-  await redirectAuthenticatedUser()
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+  const { next } = await searchParams
+  await redirectAuthenticatedUser(next)
   const canRenewSession = await hasRefreshSession()
 
   return (
@@ -16,7 +17,7 @@ export default async function LoginPage() {
       title="Entre na sua conta"
       description="Acesse suas caronas, acompanhe solicitações e organize sua rotina universitária."
     >
-      {canRenewSession ? <SessionRenewer /> : <LoginForm />}
+      {canRenewSession ? <SessionRenewer next={next} /> : <LoginForm next={next} />}
     </AuthShell>
   )
 }

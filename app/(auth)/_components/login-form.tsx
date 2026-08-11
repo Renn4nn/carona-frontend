@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { AlertCircle, ArrowRight, LockKeyhole, UserRound } from "lucide-react"
+import { AlertCircle, ArrowRight, Eye, EyeOff, LockKeyhole, UserRound } from "lucide-react"
 import { useForm } from "react-hook-form"
 
 import { signInAction } from "@/actions/auth.actions"
@@ -16,8 +16,9 @@ import {
 } from "@/lib/schemas/user.schema"
 import { useState } from "react"
 
-export function LoginForm() {
+export function LoginForm({ next }: { next?: string }) {
   const [serverError, setServerError] = useState<string>()
+  const [showPassword, setShowPassword] = useState(false)
   const form = useForm<CreateUserSchema>({
     resolver: zodResolver(createUserSchema),
     defaultValues: { login: "", password: "" },
@@ -25,7 +26,7 @@ export function LoginForm() {
 
   async function onSubmit(values: CreateUserSchema) {
     setServerError(undefined)
-    const result = await signInAction(values)
+    const result = await signInAction(values, next)
 
     if (result.message) {
       setServerError(result.message)
@@ -67,13 +68,14 @@ export function LoginForm() {
           <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             id="password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             autoComplete="current-password"
             placeholder="Digite sua senha"
-            className="pl-11"
+            className="px-11"
             aria-invalid={Boolean(form.formState.errors.password)}
             {...form.register("password")}
           />
+          <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>{showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}</button>
         </div>
         {form.formState.errors.password && (
           <p className="text-sm text-destructive">
@@ -94,7 +96,7 @@ export function LoginForm() {
 
       <p className="text-center text-sm text-muted-foreground">
         Ainda não possui conta?{" "}
-        <Link href="/cadastro" className="font-semibold text-foreground">
+        <Link href={{ pathname: "/cadastro", query: next ? { next } : undefined }} className="font-semibold text-foreground">
           Criar cadastro
         </Link>
       </p>

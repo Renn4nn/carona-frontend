@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { AlertCircle, ArrowRight, LockKeyhole, UserRound } from "lucide-react"
+import { AlertCircle, ArrowRight, Eye, EyeOff, LockKeyhole, UserRound } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 
@@ -16,8 +16,9 @@ import {
   type RegisterUserSchema,
 } from "@/lib/schemas/user.schema"
 
-export function RegisterForm() {
+export function RegisterForm({ next }: { next?: string }) {
   const [serverError, setServerError] = useState<string>()
+  const [showPasswords, setShowPasswords] = useState(false)
   const form = useForm<RegisterUserSchema>({
     resolver: zodResolver(registerUserSchema),
     defaultValues: { login: "", password: "", confirmPassword: "" },
@@ -25,7 +26,7 @@ export function RegisterForm() {
 
   async function onSubmit(values: RegisterUserSchema) {
     setServerError(undefined)
-    const result = await signUpAction(values)
+    const result = await signUpAction(values, next)
 
     if (result.message) {
       setServerError(result.message)
@@ -65,10 +66,10 @@ export function RegisterForm() {
       >
         <Input
           id="register-password"
-          type="password"
+          type={showPasswords ? "text" : "password"}
           autoComplete="new-password"
           placeholder="Crie uma senha"
-          className="pl-11"
+          className="px-11"
           aria-invalid={Boolean(form.formState.errors.password)}
           {...form.register("password")}
         />
@@ -82,14 +83,16 @@ export function RegisterForm() {
       >
         <Input
           id="confirm-password"
-          type="password"
+          type={showPasswords ? "text" : "password"}
           autoComplete="new-password"
           placeholder="Repita sua senha"
-          className="pl-11"
+          className="px-11"
           aria-invalid={Boolean(form.formState.errors.confirmPassword)}
           {...form.register("confirmPassword")}
         />
       </Field>
+
+      <button type="button" className="flex items-center gap-2 text-sm font-medium text-muted-foreground" onClick={() => setShowPasswords((value) => !value)}>{showPasswords ? <EyeOff className="size-4" /> : <Eye className="size-4" />}{showPasswords ? "Ocultar senhas" : "Mostrar senhas"}</button>
 
       <Button
         type="submit"
@@ -103,7 +106,7 @@ export function RegisterForm() {
 
       <p className="text-center text-sm text-muted-foreground">
         Já possui conta?{" "}
-        <Link href="/login" className="font-semibold text-foreground">
+        <Link href={{ pathname: "/login", query: next ? { next } : undefined }} className="font-semibold text-foreground">
           Fazer login
         </Link>
       </p>

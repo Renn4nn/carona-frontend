@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation"
 import { useEffect, useRef } from "react"
 
 import { refreshSessionAction } from "@/actions/auth.actions"
+import { safeNextPath } from "@/lib/navigation"
 
-export function SessionRenewer() {
+export function SessionRenewer({ next }: { next?: string }) {
   const started = useRef(false)
   const router = useRouter()
 
@@ -19,12 +20,12 @@ export function SessionRenewer() {
 
     void refreshSessionAction().then((success) => {
       if (success) {
-        router.replace("/inicio")
+        router.replace(safeNextPath(next))
       } else {
         router.refresh()
       }
     })
-  }, [router])
+  }, [next, router])
 
   return (
     <div

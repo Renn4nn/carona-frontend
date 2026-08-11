@@ -21,9 +21,11 @@ import type {
   SignInActionState,
   SignUpActionState,
 } from "@/lib/types/auth/action"
+import { safeNextPath } from "@/lib/navigation"
 
 export async function signInAction(
   input: unknown,
+  next?: string,
 ): Promise<SignInActionState> {
   const parsed = createUserSchema.safeParse(input)
 
@@ -45,11 +47,12 @@ export async function signInAction(
     return { message: getApiErrorMessage(error) }
   }
 
-  redirect("/inicio")
+  redirect(safeNextPath(next))
 }
 
 export async function signUpAction(
   input: unknown,
+  next?: string,
 ): Promise<SignUpActionState> {
   const parsed = registerUserSchema.safeParse(input)
 
@@ -71,7 +74,7 @@ export async function signUpAction(
     return { message: getApiErrorMessage(error) }
   }
 
-  redirect("/inicio")
+  redirect(safeNextPath(next))
 }
 
 export async function refreshSessionAction() {

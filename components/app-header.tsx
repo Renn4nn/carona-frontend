@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Bell, Menu, MessageCircle, UserRound, X } from "lucide-react"
+import { CarFront, Menu, MessageCircle, Search, UserRound, X } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
 
@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils"
 
 const navigation = [
   { href: "/inicio", label: "Início", icon: null },
+  { href: "/buscar-carona", label: "Buscar", icon: Search },
+  { href: "/oferecer-carona", label: "Oferecer", icon: CarFront },
   { href: "/conversas", label: "Conversas", icon: MessageCircle },
   { href: "/perfil", label: "Perfil", icon: UserRound },
 ]
@@ -58,12 +60,6 @@ export function AppHeader({ login }: AppHeaderProps) {
           </nav>
 
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" aria-label="Notificações">
-              <span className="relative">
-                <Bell className="size-5" aria-hidden="true" />
-                <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-primary ring-2 ring-background" />
-              </span>
-            </Button>
             <Link href="/perfil" aria-label="Abrir perfil">
               <Avatar size="lg">
                 <AvatarFallback className="bg-secondary text-secondary-foreground">
@@ -121,5 +117,5 @@ export function AppHeader({ login }: AppHeaderProps) {
 }
 
 function CarIcon() {
-  return <span className="size-5 rounded-md border-2 border-current" />
+  return <CarFront className="size-5" />
 }

@@ -1,90 +1,62 @@
 "use client"
 
-import { CheckCircle2 } from "lucide-react"
-import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { AlertCircle, CheckCircle2, GraduationCap } from "lucide-react"
+import { useMemo, useState } from "react"
 
+import { saveStudentProfileAction, setStudentProfileActiveAction } from "@/actions/student-profile.actions"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import type { MockStudentProfile } from "@/lib/types/domain"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import type { Course, University } from "@/lib/schemas/catalog.schema"
+import type { StudentProfile } from "@/lib/schemas/student-profile.schema"
 
-export function StudentProfileForm({
-  profile,
-}: {
-  profile: MockStudentProfile
-}) {
-  const [saved, setSaved] = useState(false)
+export function StudentProfileForm({ profile, universities, courses }: { profile: StudentProfile | null; universities: University[]; courses: Course[] }) {
+  const router = useRouter()
+  const initialUniversityId = profile?.course.universityId ?? universities[0]?.id ?? ""
+  const [universityId, setUniversityId] = useState(initialUniversityId)
+  const filteredCourses = useMemo(() => courses.filter((course) => course.universityId === universityId), [courses, universityId])
+  const [courseId, setCourseId] = useState(profile?.courseId ?? filteredCourses[0]?.id ?? "")
+  const [pending, setPending] = useState(false)
+  const [feedback, setFeedback] = useState<{ kind: "error" | "success"; text: string }>()
 
-  function submitMock(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setSaved(true)
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setPending(true); setFeedback(undefined)
+    const form = new FormData(event.currentTarget)
+    const result = await saveStudentProfileAction({ courseId, registration: String(form.get("registration") ?? "") }, Boolean(profile))
+    setPending(false)
+    if (result.error) setFeedback({ kind: "error", text: result.error })
+    else { setFeedback({ kind: "success", text: "Perfil acadêmico salvo." }); router.refresh() }
+  }
+
+  async function toggleActive() {
+    if (!profile) return
+    setPending(true); setFeedback(undefined)
+    const result = await setStudentProfileActiveAction(!profile.active)
+    setPending(false)
+    if (result.error) setFeedback({ kind: "error", text: result.error })
+    else { setFeedback({ kind: "success", text: profile.active ? "Perfil acadêmico desativado." : "Perfil acadêmico reativado." }); router.refresh() }
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Perfil acadêmico</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={submitMock} className="grid gap-5 sm:grid-cols-2">
-          <ProfileField id="full-name" label="Nome completo">
-            <Input id="full-name" defaultValue={profile.fullName} />
-          </ProfileField>
-          <ProfileField id="email" label="E-mail institucional">
-            <Input
-              id="email"
-              type="email"
-              defaultValue={profile.institutionalEmail}
-            />
-          </ProfileField>
-          <ProfileField id="university" label="Universidade">
-            <Input id="university" defaultValue={profile.universityName} />
-          </ProfileField>
-          <ProfileField id="course" label="Curso">
-            <Input id="course" defaultValue={profile.courseName} />
-          </ProfileField>
-          <ProfileField id="registration" label="Matrícula">
-            <Input
-              id="registration"
-              defaultValue={profile.registrationNumber}
-            />
-          </ProfileField>
-          <div className="flex items-end">
-            <Button type="submit" className="w-full sm:w-auto">
-              Salvar alterações
-            </Button>
-          </div>
+    <Card id="perfil-academico">
+      <CardHeader className="border-b"><div className="flex flex-wrap items-center justify-between gap-3"><CardTitle className="flex items-center gap-2"><GraduationCap className="size-5 text-primary" />Perfil acadêmico</CardTitle>{profile ? <Badge variant={profile.active ? "default" : "outline"}>{profile.active ? "Ativo" : "Inativo"}</Badge> : <Badge variant="outline">Não cadastrado</Badge>}</div></CardHeader>
+      <CardContent className="p-5 sm:p-6">
+        {!profile ? <p className="mb-5 text-sm leading-6 text-muted-foreground">Complete seu vínculo acadêmico para manter seu perfil preparado para recursos exclusivos da comunidade.</p> : null}
+        {feedback ? <Alert className="mb-5" variant={feedback.kind === "error" ? "destructive" : "default"}>{feedback.kind === "error" ? <AlertCircle /> : <CheckCircle2 />}<AlertDescription>{feedback.text}</AlertDescription></Alert> : null}
+        <form onSubmit={submit} className="grid gap-5 sm:grid-cols-2">
+          <Field id="university" label="Universidade"><Select value={universityId} onValueChange={(value) => { if (!value) return; setUniversityId(value); setCourseId(courses.find((course) => course.universityId === value)?.id ?? "") }}><SelectTrigger id="university" className="w-full"><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent>{universities.map((university) => <SelectItem key={university.id} value={university.id}>{university.name} · {university.city}/{university.state}</SelectItem>)}</SelectContent></Select></Field>
+          <Field id="course" label="Curso"><Select value={courseId} onValueChange={(value) => value && setCourseId(value)} disabled={!universityId}><SelectTrigger id="course" className="w-full"><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent>{filteredCourses.map((course) => <SelectItem key={course.id} value={course.id}>{course.name}</SelectItem>)}</SelectContent></Select></Field>
+          <Field id="registration" label="Matrícula"><Input id="registration" name="registration" defaultValue={profile?.registration ?? ""} maxLength={50} required /></Field>
+          <div className="flex flex-wrap items-end gap-3"><Button type="submit" disabled={pending || !courseId}>{pending ? "Salvando..." : profile ? "Salvar alterações" : "Criar perfil acadêmico"}</Button>{profile ? <Button type="button" variant="outline" disabled={pending} onClick={toggleActive}>{profile.active ? "Desativar" : "Reativar"}</Button> : null}</div>
         </form>
-
-        {saved && (
-          <Alert className="mt-5 border-primary/40 bg-primary/10">
-            <CheckCircle2 />
-            <AlertDescription>
-              Alterações aplicadas nesta demonstração. A persistência será
-              habilitada quando o perfil acadêmico existir no backend.
-            </AlertDescription>
-          </Alert>
-        )}
       </CardContent>
     </Card>
   )
 }
 
-function ProfileField({
-  id,
-  label,
-  children,
-}: {
-  id: string
-  label: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
-      {children}
-    </div>
-  )
-}
+function Field({ id, label, children }: { id: string; label: string; children: React.ReactNode }) { return <div className="space-y-2"><Label htmlFor={id}>{label}</Label>{children}</div> }
