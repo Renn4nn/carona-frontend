@@ -1,91 +1,91 @@
-name: CI & Deploy Frontend
+# name: CI & Deploy Frontend
 
-on:
-  push:
-    branches:
-      - main
-      - develop
-  pull_request:
-    branches:
-      - main
-      - develop
+# on:
+#   push:
+#     branches:
+#       - main
+#       - develop
+#   pull_request:
+#     branches:
+#       - main
+#       - develop
 
-permissions:
-  contents: read
+# permissions:
+#   contents: read
 
-concurrency:
-  group: frontend-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+# concurrency:
+#   group: frontend-${{ github.workflow }}-${{ github.ref }}
+#   cancel-in-progress: true
 
-jobs:
-  quality:
-    name: Quality checks
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+# jobs:
+#   quality:
+#     name: Quality checks
+#     runs-on: ubuntu-latest
+#     timeout-minutes: 15
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
 
-      - name: Setup dependencies
-        uses: ./.github/actions/setup
+#       - name: Setup dependencies
+#         uses: ./.github/actions/setup
 
-      - name: Lint
-        run: pnpm lint
+#       - name: Lint
+#         run: pnpm lint
 
-      - name: Check types
-        run: pnpm check-types
+#       - name: Check types
+#         run: pnpm check-types
 
-      - name: Build
-        run: pnpm build
+#       - name: Build
+#         run: pnpm build
 
-  deploy:
-    name: Deploy to VPS
-    needs: quality
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    environment: production
+#   deploy:
+#     name: Deploy to VPS
+#     needs: quality
+#     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+#     runs-on: ubuntu-latest
+#     timeout-minutes: 15
+#     environment: production
 
-    steps:
-      - name: Configure SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
-          VPS_HOST: ${{ vars.VPS_HOST }}
-          VPS_PORT: ${{ vars.VPS_PORT || '22' }}
-        run: |
-          set -euo pipefail
+#     steps:
+#       - name: Configure SSH
+#         env:
+#           SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
+#           VPS_HOST: ${{ vars.VPS_HOST }}
+#           VPS_PORT: ${{ vars.VPS_PORT || '22' }}
+#         run: |
+#           set -euo pipefail
 
-          mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H -p "$VPS_PORT" "$VPS_HOST" >> ~/.ssh/known_hosts
+#           mkdir -p ~/.ssh
+#           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+#           chmod 600 ~/.ssh/deploy_key
+#           ssh-keyscan -H -p "$VPS_PORT" "$VPS_HOST" >> ~/.ssh/known_hosts
 
-      - name: Deploy Frontend
-        env:
-          VPS_HOST: ${{ vars.VPS_HOST }}
-          VPS_USER: ${{ vars.VPS_USER }}
-          VPS_PORT: ${{ vars.VPS_PORT || '22' }}
-        run: |
-          ssh \
-            -o BatchMode=yes \
-            -o IdentitiesOnly=yes \
-            -o StrictHostKeyChecking=yes \
-            -i ~/.ssh/deploy_key \
-            -p "$VPS_PORT" \
-            "$VPS_USER@$VPS_HOST" << 'EOF'
+#       - name: Deploy Frontend
+#         env:
+#           VPS_HOST: ${{ vars.VPS_HOST }}
+#           VPS_USER: ${{ vars.VPS_USER }}
+#           VPS_PORT: ${{ vars.VPS_PORT || '22' }}
+#         run: |
+#           ssh \
+#             -o BatchMode=yes \
+#             -o IdentitiesOnly=yes \
+#             -o StrictHostKeyChecking=yes \
+#             -i ~/.ssh/deploy_key \
+#             -p "$VPS_PORT" \
+#             "$VPS_USER@$VPS_HOST" << 'EOF'
 
-              set -euo pipefail
+#               set -euo pipefail
 
-              cd /var/www/CARONA/carona-frontend
+#               cd /var/www/CARONA/carona-frontend
 
-              git fetch origin main
-              git reset --hard origin/main
+#               git fetch origin main
+#               git reset --hard origin/main
 
-              pnpm install --frozen-lockfile
-              pnpm build
+#               pnpm install --frozen-lockfile
+#               pnpm build
 
-              pm2 restart carona-frontend --update-env
-              pm2 save
+#               pm2 restart carona-frontend --update-env
+#               pm2 save
 
-          EOF
+#           EOF
