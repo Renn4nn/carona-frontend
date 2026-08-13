@@ -61,7 +61,13 @@ export async function signUpAction(
   }
 
   try {
-    const response = await api.post(API_ROUTES.AUTH.SIGN_UP, parsed.data)
+    const { universityId, name, registration, courseId, ...account } =
+      parsed.data
+    void universityId
+    const response = await api.post(API_ROUTES.AUTH.SIGN_UP, {
+      ...account,
+      studentProfile: { name, registration, courseId },
+    })
     const auth = authResponseSchema.parse(response.data).data
     const refreshToken = readRefreshToken(response.headers["set-cookie"])
 

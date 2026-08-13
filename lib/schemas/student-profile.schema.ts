@@ -3,6 +3,7 @@ import { z } from "zod"
 import { courseSchema } from "@/lib/schemas/catalog.schema"
 
 export const studentProfileInputSchema = z.strictObject({
+  name: z.string().trim().min(2, "Informe seu nome").max(120),
   courseId: z.uuid("Selecione um curso"),
   registration: z.string().trim().min(1, "Informe a matrícula").max(50),
 })
@@ -11,6 +12,7 @@ export const studentProfileSchema = z.strictObject({
   id: z.uuid(),
   userId: z.uuid(),
   courseId: z.uuid(),
+  name: z.string(),
   registration: z.string(),
   active: z.boolean(),
   course: courseSchema,

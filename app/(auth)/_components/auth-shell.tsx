@@ -21,7 +21,7 @@ export function AuthShell({
   description,
 }: AuthShellProps) {
   return (
-    <main className="relative isolate min-h-dvh overflow-hidden bg-background">
+    <main className="relative isolate min-h-dvh overflow-x-hidden bg-background">
       <div
         className="pointer-events-none absolute -right-24 -top-24 z-0 hidden size-80 rounded-full border border-primary/30 lg:block"
         aria-hidden="true"
