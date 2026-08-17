@@ -1,7 +1,5 @@
 import { z } from "zod"
 
-import { paymentMethodSchema } from "@/lib/schemas/catalog.schema"
-
 export const rideStatusSchema = z.strictObject({
   id: z.uuid(),
   code: z.enum(["OPEN", "IN_PROGRESS", "COMPLETED", "CANCELED"]),
@@ -14,15 +12,13 @@ export const rideStatusSchema = z.strictObject({
 const rideBaseSchema = z.strictObject({
   id: z.uuid(),
   status: rideStatusSchema,
-  originName: z.string(),
-  destinationName: z.string(),
+  originAddress: z.string(),
+  destinationAddress: z.string(),
   departureAt: z.iso.datetime({ offset: true }),
   estimatedArrivalAt: z.iso.datetime({ offset: true }).nullable(),
   totalSeats: z.number().int(),
   availableSeats: z.number().int(),
   isFull: z.boolean(),
-  contributionPerSeat: z.string(),
-  paymentMethod: paymentMethodSchema.nullable(),
 })
 
 export const publicRideSchema = rideBaseSchema
@@ -36,15 +32,11 @@ export const rideSchema = rideBaseSchema.extend({
     color: z.string(),
     year: z.number().int(),
   }),
-  originAddress: z.string(),
   originLatitude: z.number().nullable(),
   originLongitude: z.number().nullable(),
-  destinationAddress: z.string(),
   destinationLatitude: z.number().nullable(),
   destinationLongitude: z.number().nullable(),
-  paymentNotes: z.string().nullable(),
-  description: z.string().nullable(),
-  rules: z.string().nullable(),
+  notes: z.string().nullable(),
   startedAt: z.iso.datetime({ offset: true }).nullable(),
   completedAt: z.iso.datetime({ offset: true }).nullable(),
   canceledAt: z.iso.datetime({ offset: true }).nullable(),
@@ -56,36 +48,60 @@ export const rideSchema = rideBaseSchema.extend({
 export const rideQuerySchema = z.strictObject({
   cursor: z.uuid().optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
-  origin: z.string().trim().min(1).max(120).optional(),
-  destination: z.string().trim().min(1).max(120).optional(),
+  origin: z.string().trim().min(1).max(255).optional(),
+  destination: z.string().trim().min(1).max(255).optional(),
   departureFrom: z.iso.datetime({ offset: true }).optional(),
   departureTo: z.iso.datetime({ offset: true }).optional(),
-  maxContribution: z.coerce.number().min(0).optional(),
   availableOnly: z.enum(["true", "false"]).default("true"),
 })
+
+const address = (label: string) =>
+  z.string().trim().min(5, `${label} deve ter pelo menos 5 caracteres`).max(255)
 
 export const createRideInputSchema = z
   .strictObject({
     vehicleId: z.uuid("Selecione um veículo"),
-    paymentMethodId: z.uuid().optional(),
-    originName: z.string().trim().min(2).max(120),
-    originAddress: z.string().trim().min(5).max(255),
-    destinationName: z.string().trim().min(2).max(120),
-    destinationAddress: z.string().trim().min(5).max(255),
+    originAddress: address("Endereço inicial"),
+    originLatitude: z.number().min(-90).max(90).optional(),
+    originLongitude: z.number().min(-180).max(180).optional(),
+    destinationAddress: address("Endereço final"),
+    destinationLatitude: z.number().min(-90).max(90).optional(),
+    destinationLongitude: z.number().min(-180).max(180).optional(),
     departureAt: z.iso.datetime({ offset: true }),
-    estimatedArrivalAt: z.iso.datetime({ offset: true }).optional(),
-    totalSeats: z.coerce.number().int().min(1),
-    contributionPerSeat: z.coerce.number().min(0).default(0),
-    paymentNotes: z.string().trim().max(300).optional(),
-    description: z.string().trim().max(1000).optional(),
-    rules: z.string().trim().max(1000).optional(),
+    notes: z.string().trim().max(1000).optional(),
   })
   .superRefine((data, context) => {
-    if (data.originName.toLocaleLowerCase() === data.destinationName.toLocaleLowerCase()) {
-      context.addIssue({ code: "custom", path: ["destinationName"], message: "Origem e destino devem ser diferentes" })
+    if (data.originAddress.toLocaleLowerCase() === data.destinationAddress.toLocaleLowerCase()) {
+      context.addIssue({
+        code: "custom",
+        path: ["destinationAddress"],
+        message: "Origem e destino devem ser diferentes",
+      })
     }
-    if (data.contributionPerSeat > 0 && !data.paymentMethodId) {
-      context.addIssue({ code: "custom", path: ["paymentMethodId"], message: "Selecione como a contribuição será combinada" })
+  })
+
+export const offerRideFormSchema = z
+  .strictObject({
+    vehicleId: z.uuid("Selecione um veículo"),
+    originAddress: address("Endereço inicial"),
+    destinationAddress: address("Endereço final"),
+    departureAt: z.string().min(1, "Informe a data e hora da partida"),
+    notes: z.string().trim().max(1000, "A observação deve ter no máximo 1000 caracteres"),
+  })
+  .superRefine((data, context) => {
+    if (data.originAddress.toLocaleLowerCase() === data.destinationAddress.toLocaleLowerCase()) {
+      context.addIssue({
+        code: "custom",
+        path: ["destinationAddress"],
+        message: "Origem e destino devem ser diferentes",
+      })
+    }
+    if (data.departureAt && new Date(data.departureAt) <= new Date()) {
+      context.addIssue({
+        code: "custom",
+        path: ["departureAt"],
+        message: "A partida deve estar no futuro",
+      })
     }
   })
 
@@ -99,4 +115,5 @@ export type PublicRide = z.infer<typeof publicRideSchema>
 export type Ride = z.infer<typeof rideSchema>
 export type RideQuery = z.input<typeof rideQuerySchema>
 export type CreateRideInput = z.input<typeof createRideInputSchema>
+export type OfferRideFormInput = z.input<typeof offerRideFormSchema>
 export type CursorPage<T> = { items: T[]; pageInfo: { nextCursor: string | null; hasNextPage: boolean } }

@@ -17,7 +17,7 @@ export default async function CadastroPage({ searchParams }: { searchParams: Pro
 
   return (
     <AuthShell
-      eyebrow="Sua jornada começa aqui"
+      eyebrow=""
       title="Crie sua conta"
       description="Cadastre-se para encontrar estudantes próximos e compartilhar trajetos até a universidade."
     >

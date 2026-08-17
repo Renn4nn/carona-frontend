@@ -386,7 +386,7 @@ function StepIndicator({
       }
     >
       <span className="text-xs font-semibold">
-        {number}. {label}
+        {label}
       </span>
     </div>
   )

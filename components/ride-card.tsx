@@ -13,8 +13,6 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   minute: "2-digit",
 })
 
-const moneyFormatter = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
-
 export function RideCard({ ride, href, privateView = false }: { ride: PublicRide; href: string; privateView?: boolean }) {
   return (
     <Link href={href} className="group block h-full rounded-3xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
@@ -26,17 +24,15 @@ export function RideCard({ ride, href, privateView = false }: { ride: PublicRide
           </div>
 
           <div className="space-y-3">
-            <RoutePoint label="Saída" value={ride.originName} />
+            <RoutePoint label="Saída" value={ride.originAddress} />
             <div className="ml-2 h-4 border-l border-dashed border-primary" />
-            <RoutePoint label="Destino" value={ride.destinationName} />
+            <RoutePoint label="Destino" value={ride.destinationAddress} />
           </div>
 
           <div className="grid gap-3 border-t pt-4 text-sm text-muted-foreground sm:grid-cols-2">
             <Info icon={CalendarClock}>{dateFormatter.format(new Date(ride.departureAt))}</Info>
             <Info icon={UsersRound}>{ride.availableSeats} de {ride.totalSeats} vagas</Info>
-            <Info icon={WalletCards}>
-              {Number(ride.contributionPerSeat) === 0 ? "Gratuita" : `${moneyFormatter.format(Number(ride.contributionPerSeat))} por vaga`}
-            </Info>
+            <Info icon={WalletCards}>Valor por trajeto, mínimo R$ 5,00</Info>
           </div>
 
           <div className="mt-auto flex items-center justify-between gap-3 pt-2 text-sm font-semibold">

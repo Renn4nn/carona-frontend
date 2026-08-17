@@ -1,7 +1,8 @@
 "use client"
 
+import { CalendarDays, CarFront, MapPin, Search } from "lucide-react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { CalendarDays, MapPin, Search } from "lucide-react"
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
@@ -12,6 +13,7 @@ export function LandingSearch({ authenticated }: { authenticated: boolean }) {
   const [origin, setOrigin] = useState("")
   const [destination, setDestination] = useState("")
   const [date, setDate] = useState("")
+  const offerRideUrl = authenticated ? "/oferecer-carona" : "/login?next=%2Foferecer-carona"
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -24,27 +26,71 @@ export function LandingSearch({ authenticated }: { authenticated: boolean }) {
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-3 rounded-[1.75rem] border border-white/15 bg-white/10 p-3 shadow-2xl backdrop-blur md:grid-cols-[1fr_1fr_0.75fr_auto]" aria-label="Buscar carona">
-      <SearchField icon={MapPin} label="Saindo de">
-        <Input value={origin} onChange={(event) => setOrigin(event.target.value)} placeholder="Bairro ou região" className="border-0 bg-transparent px-0 text-white placeholder:text-white/45 focus-visible:ring-0" />
-      </SearchField>
-      <SearchField icon={MapPin} label="Indo para">
-        <Input value={destination} onChange={(event) => setDestination(event.target.value)} placeholder="Universidade ou região" className="border-0 bg-transparent px-0 text-white placeholder:text-white/45 focus-visible:ring-0" />
-      </SearchField>
-      <SearchField icon={CalendarDays} label="Quando">
-        <Input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="border-0 bg-transparent px-0 text-white scheme-dark focus-visible:ring-0" />
-      </SearchField>
-      <Button type="submit" size="lg" className="h-full min-h-14 rounded-2xl px-7"><Search aria-hidden="true" />Buscar</Button>
+    <form onSubmit={submit} className="w-full max-w-md" aria-label="Buscar carona">
+      <div className="relative space-y-2">
+        <span className="absolute left-6 top-11 h-16 border-l border-border" aria-hidden="true" />
+        <SearchField icon={MapPin} label="Local de partida">
+          <Input
+            value={origin}
+            onChange={(event) => setOrigin(event.target.value)}
+            placeholder="Bairro ou endereço"
+            className="h-6 border-0 bg-transparent p-0 text-foreground shadow-none placeholder:text-muted-foreground focus-visible:ring-0"
+          />
+        </SearchField>
+        <SearchField icon={MapPin} label="Local de chegada">
+          <Input
+            value={destination}
+            onChange={(event) => setDestination(event.target.value)}
+            placeholder="Universidade ou endereço"
+            className="h-6 border-0 bg-transparent p-0 text-foreground shadow-none placeholder:text-muted-foreground focus-visible:ring-0"
+          />
+        </SearchField>
+      </div>
+
+      <label className="mt-3 flex min-h-14 items-center gap-3 rounded-lg border bg-muted/30 px-4 text-foreground">
+        <CalendarDays className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-xs font-semibold text-muted-foreground">Quando</span>
+          <Input
+            type="date"
+            value={date}
+            onChange={(event) => setDate(event.target.value)}
+            className="h-6 border-0 bg-transparent p-0 text-foreground shadow-none focus-visible:ring-0"
+          />
+        </span>
+      </label>
+
+      <div className="mt-4 flex flex-wrap items-center gap-4">
+        <Button type="submit" size="lg" className="h-12 rounded-lg px-6">
+          <Search aria-hidden="true" />
+          Buscar carona
+        </Button>
+        <Link
+          href={offerRideUrl}
+          className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-foreground underline decoration-muted-foreground/50 underline-offset-4 hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+        >
+          Ou ofereça uma carona
+          <CarFront className="size-4 shrink-0" aria-hidden="true" />
+        </Link>
+      </div>
     </form>
   )
 }
 
-function SearchField({ icon: Icon, label, children }: { icon: typeof MapPin; label: string; children: React.ReactNode }) {
+function SearchField({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: typeof MapPin
+  label: string
+  children: React.ReactNode
+}) {
   return (
-    <label className="flex min-h-16 items-center gap-3 rounded-2xl bg-white/8 px-4">
-      <Icon className="size-5 shrink-0 text-primary" aria-hidden="true" />
+    <label className="relative z-10 flex min-h-16 items-center gap-3 rounded-lg border bg-muted/30 px-4 text-foreground">
+      <Icon className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
       <span className="min-w-0 flex-1">
-        <span className="block text-xs font-semibold uppercase tracking-wider text-white/55">{label}</span>
+        <span className="block text-xs font-semibold text-muted-foreground">{label}</span>
         {children}
       </span>
     </label>

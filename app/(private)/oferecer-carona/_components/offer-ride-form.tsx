@@ -1,8 +1,9 @@
 "use client"
 
+import { zodResolver } from "@hookform/resolvers/zod"
+import { ArrowRight, CarFront, MapPin } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { AlertCircle, ArrowRight, Info } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useForm, useWatch } from "react-hook-form"
 
 import { createRideAction } from "@/actions/ride.actions"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -15,60 +16,47 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select"
-import type { PaymentMethod } from "@/lib/schemas/catalog.schema"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  offerRideFormSchema,
+  type OfferRideFormInput,
+} from "@/lib/schemas/ride.schema"
 import type { Vehicle } from "@/lib/schemas/vehicle.schema"
 
-export function OfferRideForm({
-  vehicles,
-  paymentMethods,
-}: {
-  vehicles: Vehicle[]
-  paymentMethods: PaymentMethod[]
-}) {
+export function OfferRideForm({ vehicles }: { vehicles: Vehicle[] }) {
   const router = useRouter()
-  const [pending, setPending] = useState(false)
-  const [error, setError] = useState<string>()
-  const [vehicleId, setVehicleId] = useState(vehicles[0]?.id ?? "")
-  const [paymentMethodId, setPaymentMethodId] = useState("")
-  const [contribution, setContribution] = useState("0")
-  const vehicle = useMemo(
-    () => vehicles.find((item) => item.id === vehicleId),
-    [vehicles, vehicleId]
-  )
-  const paymentMethod = useMemo(
-    () => paymentMethods.find((item) => item.id === paymentMethodId),
-    [paymentMethods, paymentMethodId]
-  )
+  const {
+    register,
+    handleSubmit,
+    control,
+    setError,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<OfferRideFormInput>({
+    resolver: zodResolver(offerRideFormSchema),
+    defaultValues: {
+      vehicleId: vehicles[0]?.id ?? "",
+      originAddress: "",
+      destinationAddress: "",
+      departureAt: "",
+      notes: "",
+    },
+  })
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setPending(true)
-    setError(undefined)
+  const vehicleId = useWatch({ control, name: "vehicleId" })
+  const vehicle = vehicles.find((item) => item.id === vehicleId)
 
-    const form = new FormData(event.currentTarget)
-    const departureAt = String(form.get("departureAt") ?? "")
-    const estimatedArrivalAt = String(form.get("estimatedArrivalAt") ?? "")
+  async function submit(data: OfferRideFormInput) {
     const result = await createRideAction({
-      vehicleId,
-      paymentMethodId: paymentMethodId || undefined,
-      originName: String(form.get("originName") ?? ""),
-      originAddress: String(form.get("originAddress") ?? ""),
-      destinationName: String(form.get("destinationName") ?? ""),
-      destinationAddress: String(form.get("destinationAddress") ?? ""),
-      departureAt: departureAt ? new Date(departureAt).toISOString() : "",
-      estimatedArrivalAt: estimatedArrivalAt
-        ? new Date(estimatedArrivalAt).toISOString()
-        : undefined,
-      totalSeats: String(form.get("totalSeats") ?? ""),
-      contributionPerSeat: contribution,
-      paymentNotes: String(form.get("paymentNotes") ?? "") || undefined,
-      description: String(form.get("description") ?? "") || undefined,
-      rules: String(form.get("rules") ?? "") || undefined,
+      vehicleId: data.vehicleId,
+      originAddress: data.originAddress,
+      destinationAddress: data.destinationAddress,
+      departureAt: new Date(data.departureAt).toISOString(),
+      notes: data.notes || undefined,
     })
 
-    setPending(false)
-    if ("error" in result) {
-      setError(result.error)
+    if (result.error || !result.data) {
+      setError("root.server", { message: result.error ?? "Não foi possível publicar a carona." })
       return
     }
     router.push(`/caronas/${result.data.id}`)
@@ -76,26 +64,31 @@ export function OfferRideForm({
 
   return (
     <form
-      onSubmit={submit}
-      className="mt-8 space-y-8 rounded-3xl border bg-card p-5 shadow-sm sm:p-8"
+      onSubmit={handleSubmit(submit)}
+      className="mt-8 space-y-6 rounded-lg border bg-card p-5 shadow-sm sm:p-8"
     >
-      {error ? (
+      {errors.root?.server?.message ? (
         <Alert variant="destructive">
-          <AlertCircle />
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{errors.root.server.message}</AlertDescription>
         </Alert>
       ) : null}
 
-      <Section
-        title="Veículo e vagas"
-        description="A quantidade oferecida não pode superar a capacidade cadastrada."
-      >
-        <Field id="vehicleId" label="Veículo">
+      <input type="hidden" {...register("vehicleId")} />
+
+      {vehicles.length > 1 ? (
+        <Field id="vehicleId" label="Veículo" error={errors.vehicleId?.message}>
           <Select
             value={vehicleId}
-            onValueChange={(value) => value && setVehicleId(value)}
+            onValueChange={(value) =>
+              value && setValue("vehicleId", value, { shouldValidate: true })
+            }
           >
-            <SelectTrigger id="vehicleId" className="w-full">
+            <SelectTrigger
+              id="vehicleId"
+              className="w-full"
+              aria-invalid={Boolean(errors.vehicleId)}
+              aria-describedby={errors.vehicleId ? "vehicleId-error" : undefined}
+            >
               <span className="line-clamp-1 flex-1 text-left">
                 {vehicle
                   ? `${vehicle.brand} ${vehicle.model} - ${vehicle.plate}`
@@ -111,195 +104,107 @@ export function OfferRideForm({
             </SelectContent>
           </Select>
         </Field>
-        <Field id="totalSeats" label="Vagas disponíveis">
-          <Input
-            id="totalSeats"
-            name="totalSeats"
-            type="number"
-            min="1"
-            max={vehicle?.passengerCapacity ?? 1}
-            required
-          />
-          <p className="text-xs text-muted-foreground">
-            Máximo: {vehicle?.passengerCapacity ?? 0}
-          </p>
-        </Field>
-      </Section>
-
-      <Section
-        title="Trajeto"
-        description="Informe nomes curtos para a busca e endereços completos para quem participar."
-      >
-        <Field id="originName" label="Nome da origem">
-          <Input id="originName" name="originName" placeholder="Ex.: Centro" required />
-        </Field>
-        <Field id="originAddress" label="Endereço da origem">
-          <Input
-            id="originAddress"
-            name="originAddress"
-            placeholder="Rua, número e referência"
-            required
-          />
-        </Field>
-        <Field id="destinationName" label="Nome do destino">
-          <Input
-            id="destinationName"
-            name="destinationName"
-            placeholder="Ex.: Universidade Positivo"
-            required
-          />
-        </Field>
-        <Field id="destinationAddress" label="Endereço do destino">
-          <Input
-            id="destinationAddress"
-            name="destinationAddress"
-            placeholder="Rua, número e referência"
-            required
-          />
-        </Field>
-      </Section>
-
-      <Section title="Horários" description="A partida precisa estar no futuro.">
-        <Field id="departureAt" label="Partida">
-          <Input id="departureAt" name="departureAt" type="datetime-local" required />
-        </Field>
-        <Field id="estimatedArrivalAt" label="Chegada estimada">
-          <Input id="estimatedArrivalAt" name="estimatedArrivalAt" type="datetime-local" />
-        </Field>
-      </Section>
-
-      <Section
-        title="Contribuição combinada"
-        description="O valor é apenas informativo. O pagamento acontece pessoalmente, fora da plataforma."
-      >
-        <Field id="contributionPerSeat" label="Valor por vaga">
-          <Input
-            id="contributionPerSeat"
-            type="number"
-            min="0"
-            step="0.01"
-            value={contribution}
-            onChange={(event) => setContribution(event.target.value)}
-            required
-          />
-        </Field>
-        <Field id="paymentMethodId" label="Método combinado">
-          <Select
-            value={paymentMethodId}
-            onValueChange={(value) => value && setPaymentMethodId(value)}
-            disabled={Number(contribution) === 0}
-          >
-            <SelectTrigger id="paymentMethodId" className="w-full">
-              <span className="line-clamp-1 flex-1 text-left">
-                {Number(contribution) === 0
-                  ? "Carona gratuita"
-                  : paymentMethod?.name ?? "Selecione"}
-              </span>
-            </SelectTrigger>
-            <SelectContent align="start" alignItemWithTrigger={false}>
-              {paymentMethods.map((method) => (
-                <SelectItem key={method.id} value={method.id}>
-                  {method.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-        <div className="md:col-span-2">
-          <Field id="paymentNotes" label="Instruções gerais">
-            <Input
-              id="paymentNotes"
-              name="paymentNotes"
-              placeholder="Ex.: combinar após a viagem (não informe chave PIX)"
-              maxLength={300}
-            />
-          </Field>
+      ) : vehicle ? (
+        <div className="flex items-center gap-3 rounded-lg bg-muted p-4 text-sm">
+          <CarFront className="size-5 shrink-0 text-primary" aria-hidden="true" />
+          <div>
+            <p className="font-medium">{vehicle.brand} {vehicle.model}</p>
+            <p className="text-muted-foreground">
+              {vehicle.passengerCapacity} vagas serão disponibilizadas
+            </p>
+          </div>
         </div>
-      </Section>
+      ) : null}
 
-      <Section
-        title="Informações adicionais"
-        description="Ajude os passageiros a entender como será o trajeto."
-      >
-        <TextField
-          id="description"
-          label="Descrição"
-          placeholder="Conte um pouco sobre o trajeto"
-        />
-        <TextField
-          id="rules"
-          label="Regras"
-          placeholder="Ex.: tolerância de 5 minutos"
-        />
-      </Section>
+      <div className="grid gap-5 md:grid-cols-2">
+        <Field id="originAddress" label="Endereço inicial" error={errors.originAddress?.message}>
+          <div className="relative">
+            <MapPin className="absolute left-4 top-3.5 size-5 text-muted-foreground" aria-hidden="true" />
+            <Input
+              id="originAddress"
+              autoComplete="street-address"
+              placeholder="Ex.: Avenida Saul Elkind, Londrina - PR"
+              className="pl-12"
+              aria-invalid={Boolean(errors.originAddress)}
+              aria-describedby={errors.originAddress ? "originAddress-error" : undefined}
+              {...register("originAddress")}
+            />
+          </div>
+        </Field>
 
-      <Alert>
-        <Info />
-        <AlertDescription>
-          Não informe chave PIX, comprovantes, credenciais ou dados financeiros.
-        </AlertDescription>
-      </Alert>
-      <Button type="submit" size="lg" disabled={pending}>
-        {pending ? "Publicando..." : "Publicar carona"}
-        <ArrowRight />
-      </Button>
+        <Field id="destinationAddress" label="Endereço final" error={errors.destinationAddress?.message}>
+          <div className="relative">
+            <MapPin className="absolute left-4 top-3.5 size-5 text-muted-foreground" aria-hidden="true" />
+            <Input
+              id="destinationAddress"
+              autoComplete="street-address"
+              placeholder="Ex.: Universidade Positivo, Londrina - PR"
+              className="pl-12"
+              aria-invalid={Boolean(errors.destinationAddress)}
+              aria-describedby={errors.destinationAddress ? "destinationAddress-error" : undefined}
+              {...register("destinationAddress")}
+            />
+          </div>
+        </Field>
+      </div>
+
+      <Field id="departureAt" label="Data e hora da partida" error={errors.departureAt?.message}>
+        <Input
+          id="departureAt"
+          type="datetime-local"
+          min={toLocalDateTime(new Date())}
+          aria-invalid={Boolean(errors.departureAt)}
+          aria-describedby={errors.departureAt ? "departureAt-error" : undefined}
+          {...register("departureAt")}
+        />
+      </Field>
+
+      <Field id="notes" label="Observação (opcional)" error={errors.notes?.message}>
+        <Textarea
+          id="notes"
+          maxLength={1000}
+          placeholder="Ex.: saída pontual, pouco espaço para bagagem"
+          aria-invalid={Boolean(errors.notes)}
+          aria-describedby={errors.notes ? "notes-error" : undefined}
+          {...register("notes")}
+        />
+      </Field>
+
+      <div className="flex flex-col gap-3 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-muted-foreground">
+          O valor será calculado pelo desembarque de cada passageiro, com mínimo de R$ 5,00.
+        </p>
+        <Button type="submit" size="lg" disabled={isSubmitting}>
+          {isSubmitting ? "Publicando..." : "Publicar carona"}
+          <ArrowRight aria-hidden="true" />
+        </Button>
+      </div>
     </form>
-  )
-}
-
-function Section({
-  title,
-  description,
-  children,
-}: {
-  title: string
-  description: string
-  children: React.ReactNode
-}) {
-  return (
-    <fieldset>
-      <legend className="text-lg font-semibold">{title}</legend>
-      <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-      <div className="mt-5 grid gap-5 md:grid-cols-2">{children}</div>
-    </fieldset>
   )
 }
 
 function Field({
   id,
   label,
+  error,
   children,
 }: {
   id: string
   label: string
+  error?: string
   children: React.ReactNode
 }) {
+  const errorId = `${id}-error`
   return (
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
       {children}
+      {error ? <p id={errorId} className="text-sm text-destructive">{error}</p> : null}
     </div>
   )
 }
 
-function TextField({
-  id,
-  label,
-  placeholder,
-}: {
-  id: string
-  label: string
-  placeholder: string
-}) {
-  return (
-    <Field id={id} label={label}>
-      <textarea
-        id={id}
-        name={id}
-        placeholder={placeholder}
-        maxLength={1000}
-        className="min-h-28 w-full rounded-2xl border bg-transparent px-4 py-3 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-      />
-    </Field>
-  )
+function toLocalDateTime(date: Date) {
+  const offset = date.getTimezoneOffset() * 60_000
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16)
 }

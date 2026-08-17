@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-type Values = { origin: string; destination: string; departureFrom: string; maxContribution: string }
+type Values = { origin: string; destination: string; departureFrom: string }
 
 export function RideFilters({ initial }: { initial: Values }) {
   const router = useRouter()
@@ -23,7 +23,6 @@ export function RideFilters({ initial }: { initial: Values }) {
     if (next.origin.trim()) params.set("origin", next.origin.trim())
     if (next.destination.trim()) params.set("destination", next.destination.trim())
     if (next.departureFrom) params.set("departureFrom", new Date(next.departureFrom).toISOString())
-    if (next.maxContribution) params.set("maxContribution", next.maxContribution)
     return `${pathname}${params.size ? `?${params}` : ""}`
   }, [pathname])
 
@@ -43,11 +42,10 @@ export function RideFilters({ initial }: { initial: Values }) {
   return (
     <form onSubmit={submit} className="rounded-3xl border bg-card p-5 shadow-sm sm:p-6">
       <div className="mb-5 flex items-center gap-2"><SlidersHorizontal className="size-5 text-primary" /><h2 className="font-semibold">Filtre seu trajeto</h2></div>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3">
         <Field id="search-origin" label="Saindo de"><Input id="search-origin" value={values.origin} onChange={(event) => setValues((current) => ({ ...current, origin: event.target.value }))} placeholder="Bairro ou região" /></Field>
         <Field id="search-destination" label="Indo para"><Input id="search-destination" value={values.destination} onChange={(event) => setValues((current) => ({ ...current, destination: event.target.value }))} placeholder="Campus ou região" /></Field>
         <Field id="search-date" label="A partir de"><Input id="search-date" type="datetime-local" value={values.departureFrom} onChange={(event) => setValues((current) => ({ ...current, departureFrom: event.target.value }))} /></Field>
-        <Field id="search-price" label="Contribuição máxima"><Input id="search-price" type="number" min="0" step="0.01" value={values.maxContribution} onChange={(event) => setValues((current) => ({ ...current, maxContribution: event.target.value }))} placeholder="R$ 0,00" /></Field>
       </div>
       <Button type="submit" size="lg" className="mt-5 w-full sm:w-auto" disabled={pending}><Search />{pending ? "Buscando..." : "Buscar caronas"}</Button>
     </form>

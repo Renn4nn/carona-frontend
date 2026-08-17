@@ -25,7 +25,6 @@ export default async function SearchRidePage({ searchParams }: { searchParams: S
     origin: single(params.origin) || undefined,
     destination: single(params.destination) || undefined,
     departureFrom: single(params.departureFrom) || undefined,
-    maxContribution: single(params.maxContribution) || undefined,
     cursor: single(params.cursor) || undefined,
     limit: 12,
     availableOnly: "true" as const,
@@ -36,8 +35,8 @@ export default async function SearchRidePage({ searchParams }: { searchParams: S
 
   return (
     <>
-      <PageHeading eyebrow="Descobrir caronas" title="Encontre um trajeto que combina com você" description="Pesquise por regiões aproximadas, horário e contribuição. Os detalhes ficam disponíveis nesta área protegida." />
-      <div className="mt-8"><RideFilters initial={{ origin: query.origin ?? "", destination: query.destination ?? "", departureFrom: localDateTime(query.departureFrom ?? ""), maxContribution: query.maxContribution ?? "" }} /></div>
+      <PageHeading eyebrow="Descobrir caronas" title="Encontre um trajeto que combina com você" description="Pesquise por endereço e horário. Os detalhes ficam disponíveis nesta área protegida." />
+      <div className="mt-8"><RideFilters initial={{ origin: query.origin ?? "", destination: query.destination ?? "", departureFrom: localDateTime(query.departureFrom ?? "") }} /></div>
       <section className="mt-10">
         <div className="mb-5 flex items-end justify-between gap-4"><div><h2 className="text-xl font-semibold">Resultados</h2><p className="mt-1 text-sm text-muted-foreground">Caronas abertas e com disponibilidade.</p></div></div>
         {result.error ? <EmptyState title="Não foi possível buscar caronas" description={result.error} /> : rides.length === 0 ? <EmptyState title="Nenhum trajeto encontrado" description="Altere os filtros ou tente novamente mais tarde." /> : (

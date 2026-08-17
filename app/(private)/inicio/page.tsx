@@ -22,7 +22,7 @@ export default async function InicioPage() {
     <>
       <PageHeading eyebrow={`Olá, ${session.login}`} title="Para onde vamos hoje?" description="Encontre uma carona para o campus ou compartilhe seu trajeto com outros estudantes." />
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
-        <ActionCard href="/buscar-carona" icon={Search} title="Buscar carona" description="Filtre rotas, horários e contribuições disponíveis." />
+        <ActionCard href="/buscar-carona" icon={Search} title="Buscar carona" description="Filtre rotas e horários disponíveis." />
         <ActionCard href="/oferecer-carona" icon={CarFront} title="Oferecer carona" description="Publique os lugares livres no seu próximo trajeto." />
       </div>
       <RideSection title="Caronas disponíveis" description="Trajetos abertos no sistema." rides={available.data?.items ?? []} error={available.error} />
