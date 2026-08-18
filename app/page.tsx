@@ -1,9 +1,18 @@
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowRight, HandCoins, Leaf, ShieldCheck, UsersRound } from "lucide-react"
+import {
+  ArrowDown,
+  ArrowRight,
+  CarFront,
+  HandCoins,
+  Leaf,
+  MapPinned,
+  ShieldCheck,
+  UsersRound,
+} from "lucide-react"
 
-import { listPublicRidesAction } from "@/actions/ride.actions"
 import { listUniversitiesAction } from "@/actions/catalog.actions"
+import { listPublicRidesAction } from "@/actions/ride.actions"
 import { LandingSearch } from "@/app/_components/landing-search"
 import { EmptyState } from "@/components/empty-state"
 import { PublicHeader } from "@/components/public-header"
@@ -12,26 +21,63 @@ import { buttonVariants } from "@/components/ui/button"
 import { getSession } from "@/lib/auth/session"
 import { cn } from "@/lib/utils"
 
+const stats = [
+  { value: "2.400+", label: "estudantes ativos" },
+  { value: "18.000+", label: "caronas realizadas" },
+  { value: "R$ 320", label: "economia media/mes" },
+  { value: "12 ton", label: "CO2 evitado" },
+]
+
 const benefits = [
   {
-    icon: UsersRound,
-    title: "Comunidade universitária",
-    description: "Encontre pessoas com rotinas e destinos compatíveis com os seus.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Detalhes protegidos",
-    description: "Informações sensíveis aparecem somente depois da autenticação.",
-  },
-  {
     icon: HandCoins,
-    title: "Valor transparente",
-    description: "Cada passageiro terá o valor calculado pela distância até seu desembarque.",
+    title: "Divida os custos",
+    description: "Compartilhe o trajeto com quem vai para uma regiao parecida e alivie o bolso no fim do mes.",
+  },
+  {
+    icon: UsersRound,
+    title: "Comunidade universitaria",
+    description: "Conecte-se com estudantes que vivem a mesma rotina e chegam aos mesmos lugares.",
   },
   {
     icon: Leaf,
-    title: "Menos carros no caminho",
-    description: "Compartilhar trajetos ajuda a reduzir custos, trânsito e impacto ambiental.",
+    title: "Menos carros, mais futuro",
+    description: "Cada carona compartilhada ajuda a reduzir custos, transito e impacto ambiental.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Simples e protegido",
+    description: "Detalhes sensiveis ficam para usuarios autenticados e o fluxo continua direto.",
+  },
+]
+
+const driverSteps = [
+  ["Crie sua carona", "Informe origem, destino e horario. As vagas sao preenchidas pela capacidade do veiculo."],
+  ["Gerencie pedidos", "Aprove passageiros que combinam com sua rota antes da partida."],
+  ["Siga viagem", "Com a carona confirmada, todos acompanham as informacoes essenciais."],
+]
+
+const passengerSteps = [
+  ["Busque uma rota", "Use origem, destino e data para encontrar trajetos compativeis."],
+  ["Solicite a vaga", "Entre na carona e aguarde a confirmacao do motorista."],
+  ["Pague pelo trecho", "O valor sera calculado pelo desembarque, com minimo de R$ 5,00."],
+]
+
+const testimonials = [
+  {
+    quote: "Economizei no mes e ainda conheci gente que faz o mesmo caminho todos os dias.",
+    name: "Juliana M.",
+    course: "Engenharia Civil",
+  },
+  {
+    quote: "Antes eu dependia de transporte lotado. Agora consigo chegar mais tranquilo na aula.",
+    name: "Rafael S.",
+    course: "Medicina",
+  },
+  {
+    quote: "Ofereco os lugares livres do carro e divido um trajeto que eu ja faria sozinho.",
+    name: "Breno T.",
+    course: "Direito",
   },
 ]
 
@@ -49,174 +95,273 @@ export default async function LandingPage() {
   const publicRides = ridesResult.data?.items ?? []
 
   return (
-    <main className="overflow-hidden">
+    <main className="public-landing overflow-hidden bg-background text-foreground">
       <PublicHeader authenticated={authenticated} />
 
-      {/* Hero — fundo claro, texto + busca à esquerda, imagem contida à direita */}
-      <section className="bg-background">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:px-8 lg:py-20">
+      <section className="relative isolate bg-hero pt-16 text-hero-foreground lg:pt-20">
+        <div className="mx-auto grid min-h-[calc(100svh-4rem)] max-w-7xl items-center gap-10 px-4 py-12 sm:px-6 lg:min-h-[calc(100svh-5rem)] lg:grid-cols-[0.95fr_1.05fr] lg:gap-16 lg:px-8 lg:py-16">
           <div className="max-w-xl">
-            <h1 className="text-4xl font-bold leading-[1.05] tracking-tight text-balance text-foreground sm:text-5xl lg:text-6xl">
-              Vá para a universidade <span className="text-primary">em boa companhia.</span>
+            <h1 className="font-display text-5xl font-black leading-[1.02] text-balance sm:text-6xl lg:text-7xl">
+              A carona que faltava <span className="block font-normal italic text-primary">na faculdade.</span>
             </h1>
 
-            <div className="mt-8">
+            <p className="mt-6 max-w-lg text-base leading-7 text-hero-foreground/64 sm:text-lg">
+              Conecte-se com estudantes da sua universidade, compartilhe custos e chegue com mais tranquilidade.
+            </p>
+
+            <div className="mt-9 max-w-md">
               <LandingSearch authenticated={authenticated} />
             </div>
+
+            <Link
+              href="#rides"
+              className="mt-7 inline-flex items-center gap-2 text-sm font-medium text-hero-foreground/65 transition-colors hover:text-hero-foreground"
+            >
+              Ver caronas disponiveis
+              <ArrowDown className="size-4" aria-hidden="true" />
+            </Link>
           </div>
 
-          <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-muted lg:aspect-square">
+          <div className="relative min-h-[20rem] overflow-hidden rounded-3xl border border-primary/25 bg-hero-foreground/6 shadow-2xl shadow-black/20 sm:min-h-[28rem] lg:min-h-[38rem]">
             <Image
               src="/hero-carona-universitaria.png"
-              alt="Estudantes chegando juntos de carro ao campus universitário"
+              alt="Estudantes chegando juntos de carro ao campus universitario"
               fill
               priority
-              sizes="(min-width: 1024px) 40vw, 100vw"
+              sizes="(min-width: 1024px) 48vw, 100vw"
               className="object-cover"
+            />
+            <div
+              className="absolute inset-0 bg-[linear-gradient(125deg,rgba(29,28,27,0.84)_0%,rgba(29,28,27,0.25)_48%,rgba(238,193,49,0.35)_100%)]"
+              aria-hidden="true"
             />
           </div>
         </div>
       </section>
 
-      {/* Caronas disponíveis */}
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-        <SectionHeading
-          eyebrow="Próximos trajetos"
-          title="Caronas disponíveis agora"
-          description="Veja horários e regiões aproximadas. Entre na sua conta para acessar os detalhes da carona."
-        />
-
-        {ridesResult.error ? (
-          <EmptyState title="Não foi possível carregar as caronas" description={ridesResult.error} />
-        ) : publicRides.length === 0 ? (
-          <EmptyState
-            title="Nenhuma carona disponível agora"
-            description="Assim que uma nova carona for publicada, ela aparecerá aqui."
-          />
-        ) : (
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {publicRides.map((ride) => {
-              const detail = `/caronas/${ride.id}`
-              return (
-                <RideCard
-                  key={ride.id}
-                  ride={ride}
-                  href={authenticated ? detail : `/login?next=${encodeURIComponent(detail)}`}
-                />
-              )
-            })}
-          </div>
-        )}
+      <section className="bg-primary px-4 py-11 text-primary-foreground sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-8 md:grid-cols-4">
+          {stats.map((stat) => (
+            <div key={stat.label} className="text-center">
+              <p className="font-display text-3xl font-black leading-none sm:text-4xl">{stat.value}</p>
+              <p className="mt-2 text-sm font-medium text-primary-foreground/65">{stat.label}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
-      {/* Benefícios */}
-      <section className="border-y bg-muted/35 py-16 lg:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section id="how" className="bg-background px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
+        <div className="mx-auto max-w-6xl">
           <SectionHeading
-            eyebrow="Feito para a rotina real"
-            title="Por que compartilhar o caminho?"
-            description="Uma experiência simples para aproximar quem sai de lugares parecidos e segue para a universidade."
+            eyebrow="Como funciona"
+            title="Do ponto A ao ponto B, juntos e felizes."
+            description="Um fluxo simples para quem dirige e para quem procura um lugar no caminho."
           />
 
-          <div className="grid gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-5 md:grid-cols-2">
+            <FlowCard dark icon={CarFront} label="Motorista" title="Ofereca uma carona" steps={driverSteps} />
+            <FlowCard icon={MapPinned} label="Passageiro" title="Encontre sua carona" steps={passengerSteps} />
+          </div>
+        </div>
+      </section>
+
+      <section id="rides" className="bg-hero px-4 py-20 text-hero-foreground sm:px-6 lg:px-8 lg:py-28">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <SectionHeading
+              dark
+              eyebrow="Caronas em alta"
+              title="Rotas disponiveis agora mesmo."
+              description="Veja horarios e regioes aproximadas. Entre na sua conta para acessar os detalhes da carona."
+            />
+            <Link
+              href={authenticated ? "/buscar-carona" : "/login?next=%2Fbuscar-carona"}
+              className={cn(
+                buttonVariants({ variant: "outline", size: "lg" }),
+                "w-fit rounded-lg border-primary/35 bg-transparent text-primary hover:bg-primary/10 hover:text-primary"
+              )}
+            >
+              Ver todas as caronas
+              <ArrowRight aria-hidden="true" />
+            </Link>
+          </div>
+
+          {ridesResult.error ? (
+            <EmptyState title="Nao foi possivel carregar as caronas" description={ridesResult.error} />
+          ) : publicRides.length === 0 ? (
+            <EmptyState
+              title="Nenhuma carona disponivel agora"
+              description="Assim que uma nova carona for publicada, ela aparecera aqui."
+            />
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {publicRides.map((ride) => {
+                const detail = `/caronas/${ride.id}`
+                return (
+                  <RideCard
+                    key={ride.id}
+                    ride={ride}
+                    href={authenticated ? detail : `/login?next=${encodeURIComponent(detail)}`}
+                  />
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="bg-background px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
+        <div className="mx-auto max-w-6xl">
+          <SectionHeading
+            eyebrow="Por que usar"
+            title="Mais do que uma carona, uma rotina melhor."
+            description="A plataforma foi pensada para diminuir atrito no deslocamento universitario."
+          />
+
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {benefits.map((benefit) => (
-              <article
-                key={benefit.title}
-                className="group bg-background p-5 transition-colors hover:bg-muted/40 sm:p-6"
-              >
-                <span className="flex size-9 items-center justify-center rounded-lg bg-primary/18 text-foreground transition-colors group-hover:bg-primary/25">
-                  <benefit.icon className="size-4" aria-hidden="true" />
-                </span>
-                <h3 className="mt-5 font-semibold">{benefit.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{benefit.description}</p>
+              <article key={benefit.title} className="border-t-2 border-primary pt-6">
+                <benefit.icon className="size-8 text-foreground" aria-hidden="true" />
+                <h3 className="mt-5 font-display text-xl font-bold">{benefit.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">{benefit.description}</p>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Universidades */}
-      <section className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:px-8 lg:py-24">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
-            Universidades na comunidade
-          </p>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Conexões que começam no campus
+      <section className="relative overflow-hidden bg-primary px-4 py-16 text-primary-foreground sm:px-6 lg:px-8 lg:py-20">
+        <div className="relative mx-auto max-w-4xl text-center">
+          <h2 className="font-display text-4xl font-black leading-tight text-balance sm:text-5xl">
+            A universidade comeca quando voce sai de casa.
           </h2>
-          <p className="mt-5 leading-7 text-muted-foreground">
-            As instituições abaixo vêm diretamente do catálogo ativo do sistema.
-          </p>
-        </div>
-
-        <div className="rounded-xl border bg-card p-8 sm:p-12">
-          {universitiesResult.error ? (
-            <p className="text-sm text-muted-foreground">{universitiesResult.error}</p>
-          ) : positive ? (
-            <div className="flex flex-col items-center gap-5 text-center">
-              <Image
-                src="/universidade-positivo.svg"
-                alt="Universidade Positivo"
-                width={250}
-                height={77}
-                className="h-auto w-56"
-              />
-              <p className="text-sm text-muted-foreground">
-                {positive.city}, {positive.state}
-              </p>
-            </div>
-          ) : (
-            <EmptyState
-              title="Catálogo em construção"
-              description="As universidades cadastradas aparecerão aqui automaticamente."
-            />
-          )}
-        </div>
-      </section>
-
-      {/* CTA final */}
-      <section className="bg-primary px-4 py-14 text-primary-foreground sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-5xl flex-col items-center text-center">
-          <h2 className="text-3xl font-semibold tracking-tight sm:text-5xl">
-            Seu próximo trajeto pode começar aqui.
-          </h2>
-          <p className="mt-4 max-w-2xl text-primary-foreground/70">
-            Entre para encontrar uma carona ou ofereça os lugares livres no seu caminho.
+          <p className="mx-auto mt-5 max-w-2xl leading-7 text-primary-foreground/65">
+            Compartilhe trajetos, diminua custos e transforme deslocamentos repetidos em novas conexoes.
           </p>
           <Link
-            href={authenticated ? "/inicio" : "/cadastro"}
-            className={cn(buttonVariants({ variant: "secondary", size: "lg" }), "group mt-8")}
+            href={authenticated ? "/oferecer-carona" : "/login?next=%2Foferecer-carona"}
+            className={cn(buttonVariants({ variant: "secondary", size: "lg" }), "mt-8 rounded-lg")}
           >
-            {authenticated ? "Ir para o início" : "Criar minha conta"}
-            <ArrowRight className="transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+            Quero oferecer carona
+            <ArrowRight aria-hidden="true" />
           </Link>
         </div>
       </section>
 
-      <footer className="bg-hero px-4 py-8 text-sm text-hero-foreground/55 sm:px-6">
-        <div className="mx-auto flex max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <span>Carona Universitária</span>
-          <span>O valor considera a distância percorrida por cada passageiro.</span>
+      <section id="testimonials" className="border-t border-border/70 bg-background px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
+        <div className="mx-auto max-w-6xl">
+          <SectionHeading
+            eyebrow="Depoimentos"
+            title="Quem usa, nao volta atras."
+            description="Relatos curtos de uma rotina mais leve entre casa e campus."
+          />
+
+          <div className="grid gap-5 md:grid-cols-3">
+            {testimonials.map((testimonial, index) => (
+              <article
+                key={testimonial.name}
+                className={cn(
+                  "rounded-2xl p-8",
+                  index === 1
+                    ? "bg-hero text-hero-foreground"
+                    : "border border-border bg-background shadow-sm"
+                )}
+              >
+                <p className="font-display text-5xl font-black leading-none text-primary">&quot;</p>
+                <p className={cn("mt-4 leading-7", index === 1 ? "text-hero-foreground/80" : "text-muted-foreground")}>
+                  {testimonial.quote}
+                </p>
+                <div className="mt-7">
+                  <p className="font-semibold">{testimonial.name}</p>
+                  <p className={cn("text-sm", index === 1 ? "text-hero-foreground/45" : "text-muted-foreground")}>
+                    {testimonial.course}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <footer className="bg-hero px-4 py-7 text-sm text-hero-foreground/50 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="font-display text-lg font-bold text-primary">Carona <span className="font-normal text-hero-foreground">Universitaria</span></p>
+          <span>© 2026 · Mobilidade universitária</span>
         </div>
       </footer>
     </main>
   )
 }
 
+function FlowCard({
+  dark = false,
+  icon: Icon,
+  label,
+  title,
+  steps,
+}: {
+  dark?: boolean
+  icon: typeof CarFront
+  label: string
+  title: string
+  steps: string[][]
+}) {
+  return (
+    <article className={cn("rounded-2xl p-8", dark ? "bg-hero text-hero-foreground" : "bg-muted text-foreground")}>
+      <div
+        className={cn(
+          "mb-7 inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold uppercase",
+          dark ? "border border-primary/25 bg-primary/15 text-primary" : "bg-background text-foreground"
+        )}
+      >
+        <Icon className="size-4" aria-hidden="true" />
+        {label}
+      </div>
+      <h3 className="font-display text-2xl font-bold">{title}</h3>
+      <div className="mt-7 space-y-5">
+        {steps.map(([stepTitle, stepDescription], index) => (
+          <div key={stepTitle} className="flex gap-4">
+            <span
+              className={cn(
+                "flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-black",
+                dark ? "bg-primary text-primary-foreground" : "bg-hero text-primary"
+              )}
+            >
+              {index + 1}
+            </span>
+            <div>
+              <p className="font-semibold">{stepTitle}</p>
+              <p className={cn("mt-1 text-sm leading-6", dark ? "text-hero-foreground/58" : "text-muted-foreground")}>
+                {stepDescription}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </article>
+  )
+}
+
 function SectionHeading({
+  dark = false,
   eyebrow,
   title,
   description,
 }: {
+  dark?: boolean
   eyebrow: string
   title: string
   description: string
 }) {
   return (
     <div className="mb-10 max-w-2xl">
-      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">{eyebrow}</p>
-      <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h2>
-      <p className="mt-4 leading-7 text-muted-foreground">{description}</p>
+      <p className="text-xs font-bold uppercase text-primary">{eyebrow}</p>
+      <h2 className={cn("mt-3 font-display text-4xl font-bold leading-tight text-balance", dark && "text-hero-foreground")}>
+        {title}
+      </h2>
+      <p className={cn("mt-4 leading-7", dark ? "text-hero-foreground/55" : "text-muted-foreground")}>
+        {description}
+      </p>
     </div>
   )
 }

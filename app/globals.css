@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=Outfit:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -5,8 +6,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-heading: var(--font-sans);
-    --font-sans: var(--font-sans);
+    --font-display: "Fraunces", Georgia, serif;
+    --font-heading: "Fraunces", Georgia, serif;
+    --font-sans: "Outfit", system-ui, sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -50,6 +52,8 @@
 }
 
 :root {
+    --font-display: "Fraunces", Georgia, serif;
+    --font-body: "Outfit", system-ui, sans-serif;
     --background: #FFFFFF;
     --foreground: #1d1c1b;
     --card: #FFFFFF;
@@ -60,12 +64,12 @@
     --primary-foreground: #1d1c1b;
     --secondary: #1d1c1b;
     --secondary-foreground: #FFFFFF;
-    --muted: color-mix(in srgb, #FFFFFF 92%, #1d1c1b);
+    --muted: #F7F6F2;
     --muted-foreground: color-mix(in srgb, #1d1c1b 70%, #FFFFFF);
     --accent: #eec131;
     --accent-foreground: #1d1c1b;
     --destructive: #1d1c1b;
-    --border: color-mix(in srgb, #1d1c1b 14%, #FFFFFF);
+    --border: color-mix(in srgb, #1d1c1b 12%, #FFFFFF);
     --input: color-mix(in srgb, #1d1c1b 10%, #FFFFFF);
     --ring: #eec131;
     --chart-1: #eec131;
@@ -122,17 +126,49 @@
     --hero-foreground: #FFFFFF;
 }
 
+/* A landing é pública e mantém a mesma identidade visual, independente do
+   tema escolhido para as áreas autenticadas da aplicação. */
+.public-landing {
+    --background: #FFFFFF;
+    --foreground: #1d1c1b;
+    --card: #FFFFFF;
+    --card-foreground: #1d1c1b;
+    --popover: #FFFFFF;
+    --popover-foreground: #1d1c1b;
+    --secondary: #1d1c1b;
+    --secondary-foreground: #FFFFFF;
+    --muted: #F7F6F2;
+    --muted-foreground: color-mix(in srgb, #1d1c1b 70%, #FFFFFF);
+    --border: color-mix(in srgb, #1d1c1b 12%, #FFFFFF);
+    --input: color-mix(in srgb, #1d1c1b 10%, #FFFFFF);
+    --hero: #1d1c1b;
+    --hero-foreground: #FFFFFF;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    }
+  *::-webkit-scrollbar {
+    display: none;
     }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-body);
     }
   button:not(:disabled), [role="button"]:not(:disabled) {
     cursor: pointer;
     }
   html {
     @apply font-sans;
+    }
+  h1,
+  h2,
+  h3,
+  .font-heading,
+  .font-display {
+    font-family: var(--font-display);
     }
 }
