@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { CarFront, Menu, MessageCircle, Search, UserRound, X } from "lucide-react"
+import { CarFront, Menu, Search, UserRound, X } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
 
@@ -14,7 +14,6 @@ const navigation = [
   { href: "/inicio", label: "Início", icon: null },
   { href: "/buscar-carona", label: "Buscar", icon: Search },
   { href: "/oferecer-carona", label: "Oferecer", icon: CarFront },
-  { href: "/conversas", label: "Conversas", icon: MessageCircle },
   { href: "/perfil", label: "Perfil", icon: UserRound },
 ]
 

@@ -1,27 +1,27 @@
-import Link from "next/link"
 import { ArrowRight, CarFront, Search } from "lucide-react"
 
 import { listMyParticipationsAction } from "@/actions/participation.actions"
 import { listMineRidesAction, listRidesAction } from "@/actions/ride.actions"
-import { EmptyState } from "@/components/empty-state"
+import { getStudentProfileAction } from "@/actions/student-profile.actions"
+import { InicioRideTabs } from "@/app/(private)/inicio/_components/inicio-ride-tabs"
 import { PageHeading } from "@/components/page-heading"
-import { RideCard } from "@/components/ride-card"
-import { buttonVariants } from "@/components/ui/button"
 import { requireSession } from "@/lib/auth/session"
-import type { PublicRide } from "@/lib/schemas/ride.schema"
+import Link from "next/link"
 
 export default async function InicioPage() {
   const session = await requireSession()
-  const [available, offered, participations] = await Promise.all([
+  const [available, offered, participations, profileResult] = await Promise.all([
     listRidesAction({ limit: 6, availableOnly: "true" }),
     listMineRidesAction("driver"),
     listMyParticipationsAction(),
+    getStudentProfileAction(),
   ])
+  const name = profileResult.data?.name ?? session.login
 
   return (
     <>
       <PageHeading
-        eyebrow={`Olá, ${session.login}`}
+        eyebrow={`Olá, ${name}`}
         title="Para onde vamos hoje?"
         description="Encontre uma carona para o campus ou compartilhe seu trajeto com outros estudantes."
       />
@@ -39,23 +39,10 @@ export default async function InicioPage() {
           description="Publique os lugares livres no seu próximo trajeto."
         />
       </div>
-      <RideSection
-        title="Caronas disponíveis"
-        description="Trajetos abertos no sistema."
-        rides={available.data?.items ?? []}
-        error={available.error}
-      />
-      <RideSection
-        title="Suas participações"
-        description="Solicitações e vagas que você acompanha."
-        rides={participations.data?.items.map((item) => item.ride) ?? []}
-        error={participations.error}
-      />
-      <RideSection
-        title="Caronas que você oferece"
-        description="Acompanhe passageiros e o andamento das suas publicações."
-        rides={offered.data?.items ?? []}
-        error={offered.error}
+      <InicioRideTabs
+        available={{ rides: available.data?.items ?? [], error: available.error }}
+        participations={{ rides: participations.data?.items.map((item) => item.ride) ?? [], error: participations.error }}
+        offered={{ rides: offered.data?.items ?? [], error: offered.error }}
       />
     </>
   )
@@ -88,54 +75,5 @@ function ActionCard({
       </span>
       <ArrowRight className="size-5 transition group-hover:translate-x-1" />
     </Link>
-  )
-}
-function RideSection({
-  title,
-  description,
-  rides,
-  error,
-}: {
-  title: string
-  description: string
-  rides: PublicRide[]
-  error?: string
-}) {
-  return (
-    <section className="mt-12">
-      <div className="mb-5 flex items-end justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-semibold">{title}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-        </div>
-        {rides.length > 0 ? (
-          <Link
-            href="/buscar-carona"
-            className={buttonVariants({ variant: "ghost" })}
-          >
-            Ver mais
-          </Link>
-        ) : null}
-      </div>
-      {error ? (
-        <EmptyState title="Não foi possível carregar" description={error} />
-      ) : rides.length === 0 ? (
-        <EmptyState
-          title="Nada por aqui ainda"
-          description="Quando houver informações, elas aparecerão automaticamente."
-        />
-      ) : (
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {rides.slice(0, 6).map((ride) => (
-            <RideCard
-              key={ride.id}
-              ride={ride}
-              href={`/caronas/${ride.id}`}
-              privateView
-            />
-          ))}
-        </div>
-      )}
-    </section>
   )
 }

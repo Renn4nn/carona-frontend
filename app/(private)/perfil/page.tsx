@@ -42,7 +42,7 @@ export default async function PerfilPage() {
   return (
     <div className="mx-auto max-w-3xl">
       <PageHeading
-        eyebrow={session.role}
+        eyebrow={""}
         title="Seu perfil"
         description="Gerencie seu vínculo acadêmico e os veículos usados nas suas caronas."
         action={

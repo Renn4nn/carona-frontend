@@ -32,6 +32,5 @@ export const config = {
     "/oferecer-carona/:path*",
     "/caronas/:path*",
     "/perfil/:path*",
-    "/conversas/:path*",
   ],
 }
