@@ -11,6 +11,7 @@ import {
   Send,
   ShieldCheck,
   UsersRound,
+  SmilePlus
 } from "lucide-react"
 
 import { listUniversitiesAction } from "@/actions/catalog.actions"
@@ -121,7 +122,7 @@ export default async function LandingPage() {
             </Link>
           </div>
 
-          <div className="relative hidden min-h-[20rem] overflow-hidden rounded-3xl border border-primary/55 bg-hero-foreground/6 shadow-2xl shadow-black/20 lg:block lg:min-h-[38rem]">
+          <div className="relative hidden min-h-[20rem] overflow-hidden rounded-3xl border-7 border-black/55 bg-hero-foreground/6 shadow-2xl shadow-black/20 lg:block lg:min-h-[38rem]">
             <Image
               src="/hero-carona-universitaria.png"
               alt="Estudantes chegando juntos de carro ao campus universitario"
@@ -161,10 +162,10 @@ export default async function LandingPage() {
             <div className="mb-8 flex flex-col gap-3 border-b border-hero-foreground/10 pb-7 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
                 <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                  <CarFront className="size-5" aria-hidden="true" />
+                  <SmilePlus className="size-5" aria-hidden="true" />
                 </span>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-primary">Fluxo do motorista</p>
+                  <p className="font-bold uppercase tracking-wider text-primary">De carona!</p>
                   <h3 className="font-display text-2xl font-bold">Da publicação ao fechamento</h3>
                 </div>
               </div>
@@ -260,12 +261,12 @@ export default async function LandingPage() {
           <h2 className="font-display text-4xl font-black leading-tight text-balance sm:text-5xl">
             A universidade comeca quando voce sai de casa.
           </h2>
-          <p className="mx-auto mt-5 max-w-2xl leading-7 text-primary-foreground/65">
+          <p className="mx-auto mt-5 max-w-2xl leading-7 text-primary-foreground/65 font-bold">
             Compartilhe trajetos, diminua custos e transforme deslocamentos repetidos em novas conexoes.
           </p>
           <Link
             href={authenticated ? "/oferecer-carona" : "/login?next=%2Foferecer-carona"}
-            className={cn(buttonVariants({ variant: "secondary", size: "lg" }), "mt-8 rounded-lg")}
+            className={cn(buttonVariants({ variant: "secondary", size: "lg" }), "mt-8 rounded-lg p-8")}
           >
             Quero oferecer carona
             <ArrowRight aria-hidden="true" />
@@ -278,7 +279,7 @@ export default async function LandingPage() {
           <SectionHeading
             eyebrow="Depoimentos"
             title="Quem usa, nao volta atras."
-            description="Relatos curtos de uma rotina mais leve entre casa e campus."
+            description="Relatos de alguns estudantes."
           />
 
           <div className="grid gap-5 md:grid-cols-3">

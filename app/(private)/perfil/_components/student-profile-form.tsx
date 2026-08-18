@@ -153,8 +153,8 @@ export function StudentProfileForm({
                 if (!value) return
                 setUniversityId(value)
                 setCourseId(
-                  courses.find((course) => course.universityId === value)
-                    ?.id ?? ""
+                  courses.find((course) => course.universityId === value)?.id ??
+                    ""
                 )
               }}
             >
