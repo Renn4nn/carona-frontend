@@ -4,9 +4,11 @@ import {
   ArrowDown,
   ArrowRight,
   CarFront,
+  CheckCircle2,
   HandCoins,
   Leaf,
-  MapPinned,
+  Route,
+  Send,
   ShieldCheck,
   UsersRound,
 } from "lucide-react"
@@ -51,16 +53,11 @@ const benefits = [
   },
 ]
 
-const driverSteps = [
-  ["Crie sua carona", "Informe origem, destino e horario. As vagas sao preenchidas pela capacidade do veiculo."],
-  ["Gerencie pedidos", "Aprove passageiros que combinam com sua rota antes da partida."],
-  ["Siga viagem", "Com a carona confirmada, todos acompanham as informacoes essenciais."],
-]
-
-const passengerSteps = [
-  ["Busque uma rota", "Use origem, destino e data para encontrar trajetos compativeis."],
-  ["Solicite a vaga", "Entre na carona e aguarde a confirmacao do motorista."],
-  ["Pague pelo trecho", "O valor sera calculado pelo desembarque, com minimo de R$ 5,00."],
+const driverJourney = [
+  { icon: CarFront, title: "Publique a rota", description: "Informe início, destino, horário e vagas do veículo." },
+  { icon: Send, title: "Receba pedidos", description: "Estudantes interessados solicitam uma parada no caminho." },
+  { icon: UsersRound, title: "Escolha quem vai", description: "Aceite ou recuse cada pedido enquanto houver vagas." },
+  { icon: CheckCircle2, title: "Feche a viagem", description: "Com as vagas completas — ou quando preferir — encerre as solicitações até a partida." },
 ]
 
 const testimonials = [
@@ -99,6 +96,8 @@ export default async function LandingPage() {
       <PublicHeader authenticated={authenticated} />
 
       <section className="relative isolate bg-hero pt-16 text-hero-foreground lg:pt-20">
+        <div className="pointer-events-none absolute -left-52 top-12 -z-10 size-[34rem] rounded-full bg-primary/18 blur-[140px]" aria-hidden="true" />
+        <div className="pointer-events-none absolute right-0 top-1/2 -z-10 size-80 rounded-full bg-primary/10 blur-[120px]" aria-hidden="true" />
         <div className="mx-auto grid min-h-[calc(100svh-4rem)] max-w-7xl items-center gap-10 px-4 py-12 sm:px-6 lg:min-h-[calc(100svh-5rem)] lg:grid-cols-[0.95fr_1.05fr] lg:gap-16 lg:px-8 lg:py-16">
           <div className="max-w-xl">
             <h1 className="font-display text-5xl font-black leading-[1.02] text-balance sm:text-6xl lg:text-7xl">
@@ -122,7 +121,7 @@ export default async function LandingPage() {
             </Link>
           </div>
 
-          <div className="relative min-h-[20rem] overflow-hidden rounded-3xl border border-primary/25 bg-hero-foreground/6 shadow-2xl shadow-black/20 sm:min-h-[28rem] lg:min-h-[38rem]">
+          <div className="relative hidden min-h-[20rem] overflow-hidden rounded-3xl border border-primary/55 bg-hero-foreground/6 shadow-2xl shadow-black/20 lg:block lg:min-h-[38rem]">
             <Image
               src="/hero-carona-universitaria.png"
               alt="Estudantes chegando juntos de carro ao campus universitario"
@@ -132,7 +131,7 @@ export default async function LandingPage() {
               className="object-cover"
             />
             <div
-              className="absolute inset-0 bg-[linear-gradient(125deg,rgba(29,28,27,0.84)_0%,rgba(29,28,27,0.25)_48%,rgba(238,193,49,0.35)_100%)]"
+              className="absolute inset-0 bg-[linear-gradient(125deg,rgba(29,28,27,0.84)_0%,rgba(29,28,27,0.25)_48%,rgba(5,5,5,0.84)_100%)]"
               aria-hidden="true"
             />
           </div>
@@ -154,13 +153,39 @@ export default async function LandingPage() {
         <div className="mx-auto max-w-6xl">
           <SectionHeading
             eyebrow="Como funciona"
-            title="Do ponto A ao ponto B, juntos e felizes."
-            description="Um fluxo simples para quem dirige e para quem procura um lugar no caminho."
+            title="Uma rota, escolhas claras e uma viagem confirmada."
+            description="O motorista mantém o controle da carona; quem precisa de uma vaga pede uma parada no percurso."
           />
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <FlowCard dark icon={CarFront} label="Motorista" title="Ofereca uma carona" steps={driverSteps} />
-            <FlowCard icon={MapPinned} label="Passageiro" title="Encontre sua carona" steps={passengerSteps} />
+          <div className="rounded-3xl bg-hero p-6 text-hero-foreground sm:p-8 lg:p-10">
+            <div className="mb-8 flex flex-col gap-3 border-b border-hero-foreground/10 pb-7 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                  <CarFront className="size-5" aria-hidden="true" />
+                </span>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-primary">Fluxo do motorista</p>
+                  <h3 className="font-display text-2xl font-bold">Da publicação ao fechamento</h3>
+                </div>
+              </div>
+              <span className="w-fit rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">Você decide quem embarca</span>
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+              {driverJourney.map((step, index) => (
+                <article key={step.title} className="rounded-2xl border border-hero-foreground/10 bg-hero-foreground/5 p-5">
+                  <span className="mb-8 flex size-9 items-center justify-center rounded-full bg-primary text-sm font-black text-primary-foreground">{index + 1}</span>
+                  <step.icon className="mb-4 size-6 text-primary" aria-hidden="true" />
+                  <h4 className="font-semibold">{step.title}</h4>
+                  <p className="mt-2 text-sm leading-6 text-hero-foreground/58">{step.description}</p>
+                </article>
+              ))}
+            </div>
+
+            <div className="mt-6 flex items-start gap-3 rounded-2xl border border-hero-foreground/10 bg-hero-foreground/5 p-4 text-sm leading-6 text-hero-foreground/68">
+              <Route className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+              <p><strong className="text-hero-foreground">Para quem vai de passageiro:</strong> encontre uma rota, solicite a parada desejada e aguarde a decisão do motorista.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -293,55 +318,6 @@ export default async function LandingPage() {
   )
 }
 
-function FlowCard({
-  dark = false,
-  icon: Icon,
-  label,
-  title,
-  steps,
-}: {
-  dark?: boolean
-  icon: typeof CarFront
-  label: string
-  title: string
-  steps: string[][]
-}) {
-  return (
-    <article className={cn("rounded-2xl p-8", dark ? "bg-hero text-hero-foreground" : "bg-muted text-foreground")}>
-      <div
-        className={cn(
-          "mb-7 inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold uppercase",
-          dark ? "border border-primary/25 bg-primary/15 text-primary" : "bg-background text-foreground"
-        )}
-      >
-        <Icon className="size-4" aria-hidden="true" />
-        {label}
-      </div>
-      <h3 className="font-display text-2xl font-bold">{title}</h3>
-      <div className="mt-7 space-y-5">
-        {steps.map(([stepTitle, stepDescription], index) => (
-          <div key={stepTitle} className="flex gap-4">
-            <span
-              className={cn(
-                "flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-black",
-                dark ? "bg-primary text-primary-foreground" : "bg-hero text-primary"
-              )}
-            >
-              {index + 1}
-            </span>
-            <div>
-              <p className="font-semibold">{stepTitle}</p>
-              <p className={cn("mt-1 text-sm leading-6", dark ? "text-hero-foreground/58" : "text-muted-foreground")}>
-                {stepDescription}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </article>
-  )
-}
-
 function SectionHeading({
   dark = false,
   eyebrow,
@@ -355,7 +331,7 @@ function SectionHeading({
 }) {
   return (
     <div className="mb-10 max-w-2xl">
-      <p className="text-xs font-bold uppercase text-primary">{eyebrow}</p>
+      <p className="text-sm font-bold uppercase tracking-[0.14em] text-primary sm:text-base">{eyebrow}</p>
       <h2 className={cn("mt-3 font-display text-4xl font-bold leading-tight text-balance", dark && "text-hero-foreground")}>
         {title}
       </h2>
