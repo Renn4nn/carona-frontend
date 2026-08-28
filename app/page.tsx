@@ -27,8 +27,8 @@ import { cn } from "@/lib/utils"
 const stats = [
   { value: "2.400+", label: "estudantes ativos" },
   { value: "18.000+", label: "caronas realizadas" },
-  { value: "R$ 320", label: "economia media/mes" },
-  { value: "12 ton", label: "CO2 evitado" },
+  { value: "8.500+", label: "Km compartilhados" },
+  { value: "12+", label: "Universidades cadastradas" },
 ]
 
 const benefits = [
