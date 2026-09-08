@@ -43,11 +43,14 @@ type ApiRoutes = {
     PARTICIPANT_ACTION: (
       rideId: ResourceId,
       participantId: ResourceId,
-      action: "accept" | "reject",
+      action: "accept" | "reject"
     ) => string
     MY_PARTICIPATION: (id: ResourceId) => string
+    NEARBY: string
+    ROUTE: (id: ResourceId) => string
   }
   PUBLIC_RIDES: RouteProps
+  GEO: { AUTOCOMPLETE: string }
   RIDE_PARTICIPATIONS: { ME: string }
   PAYMENT_METHODS: { BASE: string }
 }
@@ -98,13 +101,15 @@ export const API_ROUTES: ApiRoutes = {
     PARTICIPANTS: (id) => `/${RESOURCES.RIDES}/${id}/participants`,
     PARTICIPANT_ACTION: (rideId, participantId, action) =>
       `/${RESOURCES.RIDES}/${rideId}/participants/${participantId}/${action}`,
-    MY_PARTICIPATION: (id) =>
-      `/${RESOURCES.RIDES}/${id}/participants/me`,
+    MY_PARTICIPATION: (id) => `/${RESOURCES.RIDES}/${id}/participants/me`,
+    NEARBY: `/${RESOURCES.RIDES}/nearby`,
+    ROUTE: (id) => `/${RESOURCES.RIDES}/${id}/route`,
   },
   PUBLIC_RIDES: {
     BASE: `/${RESOURCES.PUBLIC_RIDES}`,
     BY_ID: (id) => `/${RESOURCES.PUBLIC_RIDES}/${id}`,
   },
+  GEO: { AUTOCOMPLETE: "/geo/autocomplete" },
   RIDE_PARTICIPATIONS: {
     ME: `/${RESOURCES.RIDE_PARTICIPATIONS}/me`,
   },

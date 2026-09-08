@@ -13,6 +13,7 @@ import {
 import { getRideAction } from "@/actions/ride.actions"
 import { RideActions } from "@/app/(private)/caronas/[id]/_components/ride-actions"
 import { EmptyState } from "@/components/empty-state"
+import { RideRouteMap } from "@/components/map/ride-route-map-loader"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { requireSession } from "@/lib/auth/session"
@@ -117,6 +118,7 @@ export default async function RideDetailPage({
           <TextBlock title="Observação" text={ride.notes} />
         </section>
       ) : null}
+      <RideRouteMap ride={ride} />
       <div className="mt-8">
         <RideActions
           ride={ride}

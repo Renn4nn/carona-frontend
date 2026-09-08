@@ -1,24 +1,93 @@
 "use client"
 
 import * as React from "react"
-import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes"
 
-function ThemeProvider({
-  children,
-  ...props
-}: React.ComponentProps<typeof NextThemesProvider>) {
+type Theme = "light" | "dark" | "system"
+type ResolvedTheme = "light" | "dark"
+
+type ThemeContextValue = {
+  theme: Theme
+  resolvedTheme: ResolvedTheme
+  setTheme: (theme: Theme | ((current: Theme) => Theme)) => void
+}
+
+const ThemeContext = React.createContext<ThemeContextValue | undefined>(
+  undefined
+)
+
+function getSystemTheme(): ResolvedTheme {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light"
+}
+
+function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setThemeState] = React.useState<Theme>(() => {
+    if (typeof window === "undefined") return "system"
+    const storedTheme = window.localStorage.getItem("theme")
+    return storedTheme === "light" ||
+      storedTheme === "dark" ||
+      storedTheme === "system"
+      ? storedTheme
+      : "system"
+  })
+  const [systemTheme, setSystemTheme] = React.useState<ResolvedTheme>(() =>
+    typeof window === "undefined" ? "light" : getSystemTheme()
+  )
+  const resolvedTheme = theme === "system" ? systemTheme : theme
+
+  React.useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)")
+
+    function onSystemThemeChange() {
+      setSystemTheme(getSystemTheme())
+    }
+
+    media.addEventListener("change", onSystemThemeChange)
+
+    return () => media.removeEventListener("change", onSystemThemeChange)
+  }, [])
+
+  React.useEffect(() => {
+    document.documentElement.classList.toggle("dark", resolvedTheme === "dark")
+    document.documentElement.classList.toggle(
+      "light",
+      resolvedTheme === "light"
+    )
+    document.documentElement.style.colorScheme = resolvedTheme
+  }, [resolvedTheme])
+
+  const setTheme = React.useCallback(
+    (nextTheme: Theme | ((current: Theme) => Theme)) => {
+      setThemeState((currentTheme) => {
+        const value =
+          typeof nextTheme === "function" ? nextTheme(currentTheme) : nextTheme
+        window.localStorage.setItem("theme", value)
+        return value
+      })
+    },
+    []
+  )
+
+  const value = React.useMemo(
+    () => ({ theme, resolvedTheme, setTheme }),
+    [theme, resolvedTheme, setTheme]
+  )
+
   return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-      {...props}
-    >
+    <ThemeContext.Provider value={value}>
       <ThemeHotkey />
       {children}
-    </NextThemesProvider>
+    </ThemeContext.Provider>
   )
+}
+
+function useTheme() {
+  const context = React.useContext(ThemeContext)
+  if (!context) {
+    throw new Error("useTheme deve ser usado dentro de ThemeProvider.")
+  }
+  return context
 }
 
 function isTypingTarget(target: EventTarget | null) {
@@ -39,19 +108,15 @@ function ThemeHotkey() {
 
   React.useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (event.defaultPrevented || event.repeat) {
-        return
-      }
-
-      if (event.metaKey || event.ctrlKey || event.altKey) {
-        return
-      }
-
-      if (typeof event.key !== "string" || event.key.toLowerCase() !== "d") {
-        return
-      }
-
-      if (isTypingTarget(event.target)) {
+      if (
+        event.defaultPrevented ||
+        event.repeat ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        event.key.toLowerCase() !== "d" ||
+        isTypingTarget(event.target)
+      ) {
         return
       }
 
@@ -69,3 +134,4 @@ function ThemeHotkey() {
 }
 
 export { ThemeProvider }
+export { useTheme }

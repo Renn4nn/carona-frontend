@@ -23,6 +23,16 @@ const rideBaseSchema = z.strictObject({
 
 export const publicRideSchema = rideBaseSchema
 
+export const nearbyRideSchema = z.strictObject({
+  id: z.uuid(),
+  driver: z.strictObject({ id: z.uuid(), login: z.string() }),
+  departureAt: z.iso.datetime({ offset: true }),
+  availableSeats: z.number().int(),
+  originLatitude: z.number(),
+  originLongitude: z.number(),
+  distanceMeters: z.number().int(),
+})
+
 export const rideSchema = rideBaseSchema.extend({
   driver: z.strictObject({ id: z.uuid(), login: z.string() }),
   vehicle: z.strictObject({
@@ -71,7 +81,10 @@ export const createRideInputSchema = z
     notes: z.string().trim().max(1000).optional(),
   })
   .superRefine((data, context) => {
-    if (data.originAddress.toLocaleLowerCase() === data.destinationAddress.toLocaleLowerCase()) {
+    if (
+      data.originAddress.toLocaleLowerCase() ===
+      data.destinationAddress.toLocaleLowerCase()
+    ) {
       context.addIssue({
         code: "custom",
         path: ["destinationAddress"],
@@ -84,12 +97,22 @@ export const offerRideFormSchema = z
   .strictObject({
     vehicleId: z.uuid("Selecione um veículo"),
     originAddress: address("Endereço inicial"),
+    originLatitude: z.number().min(-90).max(90).optional(),
+    originLongitude: z.number().min(-180).max(180).optional(),
     destinationAddress: address("Endereço final"),
+    destinationLatitude: z.number().min(-90).max(90).optional(),
+    destinationLongitude: z.number().min(-180).max(180).optional(),
     departureAt: z.string().min(1, "Informe a data e hora da partida"),
-    notes: z.string().trim().max(1000, "A observação deve ter no máximo 1000 caracteres"),
+    notes: z
+      .string()
+      .trim()
+      .max(1000, "A observação deve ter no máximo 1000 caracteres"),
   })
   .superRefine((data, context) => {
-    if (data.originAddress.toLocaleLowerCase() === data.destinationAddress.toLocaleLowerCase()) {
+    if (
+      data.originAddress.toLocaleLowerCase() ===
+      data.destinationAddress.toLocaleLowerCase()
+    ) {
       context.addIssue({
         code: "custom",
         path: ["destinationAddress"],
@@ -108,12 +131,19 @@ export const offerRideFormSchema = z
 export const cursorPageSchema = <T extends z.ZodType>(item: T) =>
   z.strictObject({
     items: z.array(item),
-    pageInfo: z.strictObject({ nextCursor: z.string().nullable(), hasNextPage: z.boolean() }),
+    pageInfo: z.strictObject({
+      nextCursor: z.string().nullable(),
+      hasNextPage: z.boolean(),
+    }),
   })
 
 export type PublicRide = z.infer<typeof publicRideSchema>
+export type NearbyRideSchema = z.infer<typeof nearbyRideSchema>
 export type Ride = z.infer<typeof rideSchema>
 export type RideQuery = z.input<typeof rideQuerySchema>
 export type CreateRideInput = z.input<typeof createRideInputSchema>
 export type OfferRideFormInput = z.input<typeof offerRideFormSchema>
-export type CursorPage<T> = { items: T[]; pageInfo: { nextCursor: string | null; hasNextPage: boolean } }
+export type CursorPage<T> = {
+  items: T[]
+  pageInfo: { nextCursor: string | null; hasNextPage: boolean }
+}

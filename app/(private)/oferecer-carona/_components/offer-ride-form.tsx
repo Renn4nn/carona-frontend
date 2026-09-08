@@ -3,7 +3,8 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ArrowRight, CarFront, MapPin } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useForm, useWatch } from "react-hook-form"
+import { Controller, useForm, useWatch } from "react-hook-form"
+import { useState } from "react"
 
 import { createRideAction } from "@/actions/ride.actions"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -22,9 +23,19 @@ import {
   type OfferRideFormInput,
 } from "@/lib/schemas/ride.schema"
 import type { Vehicle } from "@/lib/schemas/vehicle.schema"
+import {
+  RideLocationPicker,
+  type RideLocation,
+} from "@/components/map/ride-location-picker-loader"
+import { AddressAutocomplete } from "@/components/map/address-autocomplete"
 
 export function OfferRideForm({ vehicles }: { vehicles: Vehicle[] }) {
   const router = useRouter()
+  const [activeLocation, setActiveLocation] = useState<
+    "origin" | "destination"
+  >("origin")
+  const [origin, setOrigin] = useState<RideLocation>()
+  const [destination, setDestination] = useState<RideLocation>()
   const {
     register,
     handleSubmit,
@@ -47,16 +58,28 @@ export function OfferRideForm({ vehicles }: { vehicles: Vehicle[] }) {
   const vehicle = vehicles.find((item) => item.id === vehicleId)
 
   async function submit(data: OfferRideFormInput) {
+    if (!origin) {
+      setError("root.server", {
+        message: "Escolha o ponto exato de saída no mapa antes de publicar.",
+      })
+      return
+    }
     const result = await createRideAction({
       vehicleId: data.vehicleId,
       originAddress: data.originAddress,
       destinationAddress: data.destinationAddress,
+      originLatitude: origin?.latitude,
+      originLongitude: origin?.longitude,
+      destinationLatitude: destination?.latitude,
+      destinationLongitude: destination?.longitude,
       departureAt: new Date(data.departureAt).toISOString(),
       notes: data.notes || undefined,
     })
 
     if (result.error || !result.data) {
-      setError("root.server", { message: result.error ?? "Não foi possível publicar a carona." })
+      setError("root.server", {
+        message: result.error ?? "Não foi possível publicar a carona.",
+      })
       return
     }
     router.push(`/caronas/${result.data.id}`)
@@ -87,7 +110,9 @@ export function OfferRideForm({ vehicles }: { vehicles: Vehicle[] }) {
               id="vehicleId"
               className="w-full"
               aria-invalid={Boolean(errors.vehicleId)}
-              aria-describedby={errors.vehicleId ? "vehicleId-error" : undefined}
+              aria-describedby={
+                errors.vehicleId ? "vehicleId-error" : undefined
+              }
             >
               <span className="line-clamp-1 flex-1 text-left">
                 {vehicle
@@ -106,9 +131,14 @@ export function OfferRideForm({ vehicles }: { vehicles: Vehicle[] }) {
         </Field>
       ) : vehicle ? (
         <div className="flex items-center gap-3 rounded-lg bg-muted p-4 text-sm">
-          <CarFront className="size-5 shrink-0 text-primary" aria-hidden="true" />
+          <CarFront
+            className="size-5 shrink-0 text-primary"
+            aria-hidden="true"
+          />
           <div>
-            <p className="font-medium">{vehicle.brand} {vehicle.model}</p>
+            <p className="font-medium">
+              {vehicle.brand} {vehicle.model}
+            </p>
             <p className="text-muted-foreground">
               {vehicle.passengerCapacity} vagas serão disponibilizadas
             </p>
@@ -117,49 +147,131 @@ export function OfferRideForm({ vehicles }: { vehicles: Vehicle[] }) {
       ) : null}
 
       <div className="grid gap-5 md:grid-cols-2">
-        <Field id="originAddress" label="Endereço inicial" error={errors.originAddress?.message}>
+        <Field
+          id="originAddress"
+          label="Endereço inicial"
+          error={errors.originAddress?.message}
+        >
           <div className="relative">
-            <MapPin className="absolute left-4 top-3.5 size-5 text-muted-foreground" aria-hidden="true" />
-            <Input
-              id="originAddress"
-              autoComplete="street-address"
-              placeholder="Ex.: Avenida Saul Elkind, Londrina - PR"
-              className="pl-12"
-              aria-invalid={Boolean(errors.originAddress)}
-              aria-describedby={errors.originAddress ? "originAddress-error" : undefined}
-              {...register("originAddress")}
+            <MapPin
+              className="absolute top-3.5 left-4 size-5 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <Controller
+              name="originAddress"
+              control={control}
+              render={({ field }) => (
+                <AddressAutocomplete
+                  id="originAddress"
+                  value={field.value}
+                  onChange={(value) => {
+                    setOrigin(undefined)
+                    field.onChange(value)
+                  }}
+                  placeholder="Ex.: Avenida Saul Elkind, Londrina - PR"
+                  onSelect={(suggestion) => {
+                    field.onChange(suggestion.label)
+                    setOrigin({
+                      latitude: suggestion.latitude,
+                      longitude: suggestion.longitude,
+                    })
+                  }}
+                />
+              )}
             />
           </div>
         </Field>
 
-        <Field id="destinationAddress" label="Endereço final" error={errors.destinationAddress?.message}>
+        <Field
+          id="destinationAddress"
+          label="Endereço final"
+          error={errors.destinationAddress?.message}
+        >
           <div className="relative">
-            <MapPin className="absolute left-4 top-3.5 size-5 text-muted-foreground" aria-hidden="true" />
-            <Input
-              id="destinationAddress"
-              autoComplete="street-address"
-              placeholder="Ex.: Universidade Positivo, Londrina - PR"
-              className="pl-12"
-              aria-invalid={Boolean(errors.destinationAddress)}
-              aria-describedby={errors.destinationAddress ? "destinationAddress-error" : undefined}
-              {...register("destinationAddress")}
+            <MapPin
+              className="absolute top-3.5 left-4 size-5 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <Controller
+              name="destinationAddress"
+              control={control}
+              render={({ field }) => (
+                <AddressAutocomplete
+                  id="destinationAddress"
+                  value={field.value}
+                  onChange={(value) => {
+                    setDestination(undefined)
+                    field.onChange(value)
+                  }}
+                  placeholder="Ex.: Universidade Positivo, Londrina - PR"
+                  onSelect={(suggestion) => {
+                    field.onChange(suggestion.label)
+                    setDestination({
+                      latitude: suggestion.latitude,
+                      longitude: suggestion.longitude,
+                    })
+                  }}
+                />
+              )}
             />
           </div>
         </Field>
       </div>
 
-      <Field id="departureAt" label="Data e hora da partida" error={errors.departureAt?.message}>
+      <div className="space-y-3 rounded-lg border bg-muted/30 p-4">
+        <div
+          className="flex flex-wrap gap-2"
+          role="group"
+          aria-label="Local a definir no mapa"
+        >
+          <Button
+            type="button"
+            variant={activeLocation === "origin" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setActiveLocation("origin")}
+          >
+            Definir origem
+          </Button>
+          <Button
+            type="button"
+            variant={activeLocation === "destination" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setActiveLocation("destination")}
+          >
+            Definir destino
+          </Button>
+        </div>
+        <RideLocationPicker
+          active={activeLocation}
+          origin={origin}
+          destination={destination}
+          onSelectOrigin={setOrigin}
+          onSelectDestination={setDestination}
+        />
+      </div>
+
+      <Field
+        id="departureAt"
+        label="Data e hora da partida"
+        error={errors.departureAt?.message}
+      >
         <Input
           id="departureAt"
           type="datetime-local"
           min={toLocalDateTime(new Date())}
           aria-invalid={Boolean(errors.departureAt)}
-          aria-describedby={errors.departureAt ? "departureAt-error" : undefined}
+          aria-describedby={
+            errors.departureAt ? "departureAt-error" : undefined
+          }
           {...register("departureAt")}
         />
       </Field>
 
-      <Field id="notes" label="Observação (opcional)" error={errors.notes?.message}>
+      <Field
+        id="notes"
+        label="Observação (opcional)"
+        error={errors.notes?.message}
+      >
         <Textarea
           id="notes"
           maxLength={1000}
@@ -172,7 +284,8 @@ export function OfferRideForm({ vehicles }: { vehicles: Vehicle[] }) {
 
       <div className="flex flex-col gap-3 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
-          O valor será calculado pelo desembarque de cada passageiro, com mínimo de R$ 5,00.
+          O valor será calculado pelo desembarque de cada passageiro, com mínimo
+          de R$ 5,00.
         </p>
         <Button type="submit" size="lg" disabled={isSubmitting}>
           {isSubmitting ? "Publicando..." : "Publicar carona"}
@@ -199,7 +312,11 @@ function Field({
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
       {children}
-      {error ? <p id={errorId} className="text-sm text-destructive">{error}</p> : null}
+      {error ? (
+        <p id={errorId} className="text-sm text-destructive">
+          {error}
+        </p>
+      ) : null}
     </div>
   )
 }
