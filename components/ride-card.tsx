@@ -3,6 +3,7 @@ import { ArrowRight, CalendarClock, MapPin, UsersRound, WalletCards } from "luci
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { APP_TIME_ZONE } from "@/constants/region"
 import type { PublicRide } from "@/lib/schemas/ride.schema"
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
@@ -11,6 +12,7 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   month: "short",
   hour: "2-digit",
   minute: "2-digit",
+  timeZone: APP_TIME_ZONE,
 })
 
 export function RideCard({ ride, href, privateView = false }: { ride: PublicRide; href: string; privateView?: boolean }) {

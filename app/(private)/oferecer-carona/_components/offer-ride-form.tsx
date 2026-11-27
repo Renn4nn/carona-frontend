@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { ArrowRight, CarFront, MapPin } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Controller, useForm, useWatch } from "react-hook-form"
-import { useState } from "react"
+import { useState, useSyncExternalStore } from "react"
 
 import { createRideAction } from "@/actions/ride.actions"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -53,6 +53,14 @@ export function OfferRideForm({ vehicles }: { vehicles: Vehicle[] }) {
       notes: "",
     },
   })
+
+  // Calculado só no navegador: o servidor roda em UTC e geraria outro valor
+  // (hydration mismatch). No servidor o atributo fica sem `min`.
+  const minDepartureAt = useSyncExternalStore(
+    subscribeNoop,
+    () => toLocalDateTime(new Date()),
+    () => undefined
+  )
 
   const vehicleId = useWatch({ control, name: "vehicleId" })
   const vehicle = vehicles.find((item) => item.id === vehicleId)
@@ -258,7 +266,7 @@ export function OfferRideForm({ vehicles }: { vehicles: Vehicle[] }) {
         <Input
           id="departureAt"
           type="datetime-local"
-          min={toLocalDateTime(new Date())}
+          min={minDepartureAt}
           aria-invalid={Boolean(errors.departureAt)}
           aria-describedby={
             errors.departureAt ? "departureAt-error" : undefined
@@ -319,6 +327,10 @@ function Field({
       ) : null}
     </div>
   )
+}
+
+function subscribeNoop() {
+  return () => {}
 }
 
 function toLocalDateTime(date: Date) {

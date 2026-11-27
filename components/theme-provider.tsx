@@ -114,7 +114,8 @@ function ThemeHotkey() {
         event.metaKey ||
         event.ctrlKey ||
         event.altKey ||
-        event.key.toLowerCase() !== "d" ||
+        // Autofill do navegador dispara keydown sem `key`.
+        event.key?.toLowerCase() !== "d" ||
         isTypingTarget(event.target)
       ) {
         return
