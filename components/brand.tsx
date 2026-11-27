@@ -4,7 +4,7 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 
 /** Símbolo da logo (pin com o carro) num quadrado branco, legível nos temas claro e escuro. */
-export function BrandMark({ className }: { className?: string }) {
+export function BrandMark({ className }: Readonly<{ className?: string }>) {
   return (
     <span
       className={cn(
