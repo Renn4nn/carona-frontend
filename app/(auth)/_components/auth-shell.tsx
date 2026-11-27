@@ -1,5 +1,7 @@
 import Link from "next/link"
-import { CarFront, MapPin, ShieldCheck, UsersRound } from "lucide-react"
+import { MapPin, ShieldCheck, UsersRound } from "lucide-react"
+
+import { BrandMark } from "@/components/brand"
 
 type AuthShellProps = {
   children: React.ReactNode
@@ -37,9 +39,7 @@ export function AuthShell({
           <div className="absolute -bottom-40 -left-32 size-[30rem] rounded-full bg-primary/10" />
 
           <Link href="/" className="relative flex items-center gap-3">
-            <span className="flex size-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-              <CarFront className="size-5" aria-hidden="true" />
-            </span>
+            <BrandMark className="size-11" />
             <span className="font-semibold">Carona Universitária</span>
           </Link>
 
@@ -74,9 +74,7 @@ export function AuthShell({
               href="/"
               className="mb-10 flex items-center gap-3 lg:hidden"
             >
-              <span className="flex size-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-                <CarFront className="size-5" aria-hidden="true" />
-              </span>
+              <BrandMark />
               <span className="font-semibold">Carona Universitária</span>
             </Link>
 
