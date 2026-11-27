@@ -121,7 +121,7 @@ export function NearbyRidesMap() {
           </Button>
         ))}
       </div>
-      <div className="h-96 overflow-hidden rounded-2xl border">
+      <div className="isolate h-96 overflow-hidden rounded-2xl border">
         <MapContainer
           center={[center.latitude, center.longitude]}
           zoom={13}

@@ -29,6 +29,9 @@ FROM dependencies AS builder
 
 ARG API_BASE_URL=http://backend:3000/api
 ENV API_BASE_URL=$API_BASE_URL
+# Variáveis NEXT_PUBLIC_* são embutidas no JS durante o build.
+ARG NEXT_PUBLIC_GEOAPIFY_API_KEY=
+ENV NEXT_PUBLIC_GEOAPIFY_API_KEY=$NEXT_PUBLIC_GEOAPIFY_API_KEY
 ENV NODE_ENV=production
 
 COPY . .
@@ -38,6 +41,7 @@ RUN pnpm build
 FROM node:24-alpine AS production
 
 ENV NODE_ENV=production
+ENV TZ=America/Sao_Paulo
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 

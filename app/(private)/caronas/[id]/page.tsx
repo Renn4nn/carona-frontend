@@ -13,6 +13,7 @@ import {
 import { getRideAction } from "@/actions/ride.actions"
 import { RideActions } from "@/app/(private)/caronas/[id]/_components/ride-actions"
 import { EmptyState } from "@/components/empty-state"
+import { APP_TIME_ZONE } from "@/constants/region"
 import { RideRouteMap } from "@/components/map/ride-route-map-loader"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -51,6 +52,7 @@ export default async function RideDetailPage({
   const date = new Intl.DateTimeFormat("pt-BR", {
     dateStyle: "full",
     timeStyle: "short",
+    timeZone: APP_TIME_ZONE,
   }).format(new Date(ride.departureAt))
   return (
     <div className="mx-auto max-w-5xl">
@@ -88,6 +90,7 @@ export default async function RideDetailPage({
                 value={new Intl.DateTimeFormat("pt-BR", {
                   dateStyle: "short",
                   timeStyle: "short",
+                  timeZone: APP_TIME_ZONE,
                 }).format(new Date(ride.estimatedArrivalAt))}
               />
             ) : null}

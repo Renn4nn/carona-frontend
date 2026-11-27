@@ -55,13 +55,13 @@ export function AddressAutocomplete({
         autoComplete="off"
       />
       {loading ? (
-        <p className="absolute z-10 mt-1 w-full rounded-md border bg-popover p-3 text-sm text-muted-foreground shadow">
+        <p className="absolute z-50 mt-1 w-full rounded-md border bg-popover p-3 text-sm text-muted-foreground shadow">
           Buscando endereços...
         </p>
       ) : null}
       {!loading && error ? (
         <p
-          className="absolute z-10 mt-1 w-full rounded-md border border-destructive/30 bg-popover p-3 text-sm text-destructive shadow"
+          className="absolute z-50 mt-1 w-full rounded-md border border-destructive/30 bg-popover p-3 text-sm text-destructive shadow"
           role="alert"
         >
           {error}
@@ -69,7 +69,7 @@ export function AddressAutocomplete({
       ) : null}
       {!loading && suggestions.length > 0 ? (
         <ul
-          className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border bg-popover shadow"
+          className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border bg-popover shadow"
           role="listbox"
         >
           {suggestions.map((suggestion) => (

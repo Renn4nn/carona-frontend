@@ -14,7 +14,6 @@ import {
   SmilePlus
 } from "lucide-react"
 
-import { listUniversitiesAction } from "@/actions/catalog.actions"
 import { listPublicRidesAction } from "@/actions/ride.actions"
 import { LandingSearch } from "@/app/_components/landing-search"
 import { EmptyState } from "@/components/empty-state"
@@ -80,16 +79,12 @@ const testimonials = [
 ]
 
 export default async function LandingPage() {
-  const [session, ridesResult, universitiesResult] = await Promise.all([
+  const [session, ridesResult] = await Promise.all([
     getSession(),
     listPublicRidesAction({ limit: 6, availableOnly: "true" }),
-    listUniversitiesAction(),
   ])
 
   const authenticated = Boolean(session)
-  const positive = universitiesResult.data?.find((university) =>
-    university.name.toLocaleLowerCase().includes("positivo")
-  )
   const publicRides = ridesResult.data?.items ?? []
 
   return (

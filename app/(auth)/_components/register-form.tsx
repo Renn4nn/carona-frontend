@@ -367,7 +367,6 @@ export function RegisterForm({
 }
 
 function StepIndicator({
-  number,
   label,
   active,
   completed = false,
