@@ -57,7 +57,7 @@ export function RideRouteMap({ ride }: { ride: Ride }) {
   return (
     <section className="mt-8 space-y-3">
       <h2 className="text-xl font-semibold">Trajeto da carona</h2>
-      <div className="h-96 overflow-hidden rounded-2xl border">
+      <div className="isolate h-96 overflow-hidden rounded-2xl border">
         <MapContainer center={center} zoom={13} className="h-full w-full">
           <FitRoute
             origin={center}

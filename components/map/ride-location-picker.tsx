@@ -47,7 +47,7 @@ export function RideLocationPicker({
           ? "Clique no mapa para definir a origem. Você pode ajustar o pin arrastando-o."
           : "Selecione o destino nas sugestões de endereço."}
       </p>
-      <div className="h-80 overflow-hidden rounded-lg border">
+      <div className="isolate h-80 overflow-hidden rounded-lg border">
         <MapContainer
           center={origin ? [origin.latitude, origin.longitude] : defaultCenter}
           zoom={13}
